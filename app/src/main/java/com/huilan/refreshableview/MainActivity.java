@@ -24,7 +24,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         initView();
         myAdpter = new MyAdpter();
-        refreshlistview.setAdapter(myAdpter);
+        refreshlistview.getRefreshableView().setAdapter(myAdpter);
 //        refreshlistview.setOnRefreshListener(this);
     }
 
