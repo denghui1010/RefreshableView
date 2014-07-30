@@ -18,9 +18,7 @@ package com.huilan.refreshableview;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.view.ViewGroup.LayoutParams;
 
 public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
@@ -102,11 +100,11 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
     protected void setHeaderEnable() {
         headerLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.default_header_height));
-        setHeaderEnable(headerLayoutParams, HeaderRefreshMode.REQUIRE_PULL);
+        setHeaderEnable(headerLayoutParams, HeaderRefreshMode.PULL);
     }
 
     protected void setHeaderView(LayoutParams layoutParams){
-        setHeaderEnable(layoutParams, HeaderRefreshMode.REQUIRE_PULL);
+        setHeaderEnable(layoutParams, HeaderRefreshMode.PULL);
     }
 
     protected void setHeaderEnable(LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
@@ -118,11 +116,11 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
     protected void setFooterEnable(){
         footerLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.default_footer_height));
-        setFooterEnable(footerLayoutParams, FooterRefreshMode.REQUIRE_PULL);
+        setFooterEnable(footerLayoutParams, FooterRefreshMode.AUTO);
     }
 
     protected void setFooterEnable(LayoutParams layoutParams){
-        setFooterEnable(layoutParams, FooterRefreshMode.REQUIRE_PULL);
+        setFooterEnable(layoutParams, FooterRefreshMode.AUTO);
     }
 
     protected void setFooterEnable(LayoutParams layoutParams, FooterRefreshMode footerRefreshMode){

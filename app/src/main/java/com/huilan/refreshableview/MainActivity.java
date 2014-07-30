@@ -1,22 +1,20 @@
 package com.huilan.refreshableview;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.GridLayout;
-import android.widget.GridView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.LinkedList;
+import java.util.Random;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements OnHeaderRefreshListener,OnFooterRefreshListener{
 
     private RefreshableListView refreshlistview;
-    private GridLayout gridView;
 
     private LinkedList<String> list;
     private MyAdpter myAdpter;
@@ -28,8 +26,9 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         initView();
         myAdpter = new MyAdpter();
-        refreshlistview.getRefreshableView().setAdapter(myAdpter);
-//        refreshlistview.setOnRefreshListener(this);
+        refreshlistview.setAdapter(myAdpter);
+        refreshlistview.setOnHeaderRefreshListener(this);
+        refreshlistview.setOnFooterRefreshListener(this);
     }
 
     private void initView() {
@@ -40,6 +39,58 @@ public class MainActivity extends ActionBarActivity {
         for (int i = 0; i < 30; ++i) {
             list.add("这是listview的数据" + i);
         }
+    }
+
+    @Override
+    public void onHeaderRefresh(View headerView) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                Random random = new Random();
+                int temp = random.nextInt(5) + 1;
+                for (int i = 0; i < temp; ++i, ++count) {
+                    list.addFirst("这是下拉刷新出来的数据" + count);
+                }
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void result) {
+                myAdpter.notifyDataSetChanged();
+                refreshlistview.notifyHeaderRefreshFinished();
+            }
+        }.execute();
+    }
+
+    @Override
+    public void onFooterRefresh(View footerView) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                Random random = new Random();
+                int temp = random.nextInt(5) + 10;
+                for (int i = 0; i < temp; ++i, ++count) {
+                    list.add("这是加载更多出来的数据" + count);
+                }
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void result) {
+                myAdpter.notifyDataSetChanged();
+                refreshlistview.notifyFooterRefreshFinished(RefreshState.REFRESHING);
+            }
+        }.execute();
     }
 
     private class MyAdpter extends BaseAdapter {
@@ -73,30 +124,4 @@ public class MainActivity extends ActionBarActivity {
         }
 
     }
-
-//    @Override
-//    public void onRefresh() {
-//        new AsyncTask<Void, Void, Void>() {
-//            @Override
-//            protected Void doInBackground(Void... params) {
-//                Random random = new Random();
-//                int temp = random.nextInt(5) + 1;
-//                for (int i = 0; i < temp; ++i, ++count) {
-//                    list.addFirst("这是下拉刷新出来的数据" + count);
-//                }
-//                try {
-//                    Thread.sleep(2000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                return null;
-//            }
-//
-//            @Override
-//            protected void onPostExecute(Void result) {
-//                myAdpter.notifyDataSetChanged();
-////                refreshlistview.onRefreshFinished();
-//            }
-//        }.execute();
-//    }
 }
