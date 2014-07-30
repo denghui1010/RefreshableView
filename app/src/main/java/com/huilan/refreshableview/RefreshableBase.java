@@ -20,59 +20,47 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ListView;
+import android.view.ViewGroup.LayoutParams;
 
 public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
-	public static final String LOG_TAG = "RefreshableView";
-	public final int SMOOTH_SCROLL_DURATION = 200;
+    public static final String LOG_TAG = "RefreshableView";
+    public final int SMOOTH_SCROLL_DURATION = 200;
     private T refreshableView;
     private View headerView;
     private View footerView;
+    private LayoutParams headerLayoutParams;
+    private LayoutParams footerLayoutParams;
 
-	private OnHeaderRefreshListener onHeaderRefreshListener;
-	private OnFooterRefreshListener onFooterRefreshListener;
+    private OnHeaderRefreshListener onHeaderRefreshListener;
+    private OnFooterRefreshListener onFooterRefreshListener;
     private HeaderRefreshMode headerRefreshMode = HeaderRefreshMode.CLOSE;
     private FooterRefreshMode footerRefreshMode = FooterRefreshMode.CLOSE;
 
-	public RefreshableBase(Context context) {
-		super(context);
-		init();
-        createRefreshableView(context,null);
-	}
+    public RefreshableBase(Context context) {
+        super(context);
+        refreshableView = createRefreshableView(context, null);
+        init();
+    }
 
-	public RefreshableBase(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		init();
-        createRefreshableView(context,attrs);
-	}
-
-    /**
-     *
-     * @param child 添加的子view
-     * @param index 添加的位置
-     * @param params layoutparams
-     */
-    @Override
-	public void addView(View child, int index, ViewGroup.LayoutParams params) {
-		T coreView = getRefreshableView();
-		if (coreView instanceof ViewGroup) {
-			((ViewGroup) coreView).addView(child, index, params);
-		} else {
-			throw new UnsupportedOperationException("Core View is not a ViewGroup so can't addView");
-		}
-	}
+    public RefreshableBase(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        refreshableView = createRefreshableView(context, attrs);
+        init();
+    }
 
     /**
      * 获取view
+     *
      * @return 核心view
      */
-	public T getRefreshableView() {
-		return refreshableView;
-	}
+    public T getRefreshableView() {
+        return refreshableView;
+    }
 
     /**
      * 获取顶部刷新模式
+     *
      * @return HeaderRefreshMode 顶部刷新模式
      */
     public HeaderRefreshMode getHeaderRefreshMode() {
@@ -81,6 +69,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
     /**
      * 获取底部刷新模式
+     *
      * @return FooterRefreshMode 底部刷新模式
      */
     public FooterRefreshMode getFooterRefreshMode() {
@@ -89,6 +78,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
     /**
      * 设置顶部刷新模式
+     *
      * @param headerRefreshMode 顶部刷新模式
      */
     public void setHeaderRefreshMode(HeaderRefreshMode headerRefreshMode) {
@@ -97,35 +87,63 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
     /**
      * 设置底部刷新模式
+     *
      * @param footerRefreshMode 底部刷新模式
      */
     public void setFooterRefreshMode(FooterRefreshMode footerRefreshMode) {
         this.footerRefreshMode = footerRefreshMode;
     }
 
-    private void init(){
+    private void init() {
+        setOrientation(VERTICAL);
+        LayoutParams layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        addView(refreshableView, layoutParams);
     }
 
-    protected void addHeaderView(View headerView){
-        addHeaderView(headerView,HeaderRefreshMode.REQUIRE_PULL);
+    protected void setHeaderEnable() {
+        headerLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.default_header_height));
+        setHeaderEnable(headerLayoutParams, HeaderRefreshMode.REQUIRE_PULL);
     }
 
-    protected void addHeaderView(View headerView, HeaderRefreshMode headerRefreshMode){
-        this.headerView = headerView;
+    protected void setHeaderView(LayoutParams layoutParams){
+        setHeaderEnable(layoutParams, HeaderRefreshMode.REQUIRE_PULL);
+    }
+
+    protected void setHeaderEnable(LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
         this.headerRefreshMode = headerRefreshMode;
-        addView(headerView,0);
+        headerLayoutParams = layoutParams;
+        createHeaderView();
+        addView(headerView,0,layoutParams);
     }
 
-    protected void addFooderView(View footerView){
-        addFooterView(footerView, FooterRefreshMode.REQUIRE_PULL);
+    protected void setFooterEnable(){
+        footerLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.default_footer_height));
+        setFooterEnable(footerLayoutParams, FooterRefreshMode.REQUIRE_PULL);
     }
 
-    protected void addFooterView(View footerView, FooterRefreshMode footerRefreshMode){
-        this.footerView = footerView;
+    protected void setFooterEnable(LayoutParams layoutParams){
+        setFooterEnable(layoutParams, FooterRefreshMode.REQUIRE_PULL);
+    }
+
+    protected void setFooterEnable(LayoutParams layoutParams, FooterRefreshMode footerRefreshMode){
         this.footerRefreshMode = footerRefreshMode;
-        addView(footerView,2);
+        footerLayoutParams = layoutParams;
+        createFooterView();
+        addView(footerView,2,layoutParams);
     }
 
     protected abstract T createRefreshableView(Context context, AttributeSet attrs);
+
+    private void createHeaderView() {
+        headerView = View.inflate(getContext(), R.layout.layout_header,null);
+    }
+
+    private void createFooterView() {
+        footerView = View.inflate(getContext(),R.layout.layout_header,null);
+    }
+
+    private void setPadding(){
+
+    }
 
 }

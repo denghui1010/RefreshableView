@@ -5,6 +5,9 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.GridLayout;
+import android.widget.GridView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.LinkedList;
@@ -13,6 +16,7 @@ import java.util.LinkedList;
 public class MainActivity extends ActionBarActivity {
 
     private RefreshableListView refreshlistview;
+    private GridLayout gridView;
 
     private LinkedList<String> list;
     private MyAdpter myAdpter;
@@ -30,6 +34,8 @@ public class MainActivity extends ActionBarActivity {
 
     private void initView() {
         refreshlistview = (RefreshableListView) findViewById(R.id.rl_list);
+        refreshlistview.setHeaderEnable();
+        refreshlistview.setFooterEnable();
         list = new LinkedList<String>();
         for (int i = 0; i < 30; ++i) {
             list.add("这是listview的数据" + i);
