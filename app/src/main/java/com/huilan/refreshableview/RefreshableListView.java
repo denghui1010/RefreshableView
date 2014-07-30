@@ -21,12 +21,12 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
 
     public RefreshableListView(Context context) {
         super(context);
-        setOnScrollListener(this);
+        init();
     }
 
     public RefreshableListView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setOnScrollListener(this);
+        init();
     }
 
     public static final String LOG_TAG = "RefreshableView";
@@ -38,8 +38,8 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
 
     private OnHeaderRefreshListener onHeaderRefreshListener;
     private OnFooterRefreshListener onFooterRefreshListener;
-    private HeaderRefreshMode headerRefreshMode = HeaderRefreshMode.CLOSE;
-    private FooterRefreshMode footerRefreshMode = FooterRefreshMode.CLOSE;
+    private HeaderRefreshMode headerRefreshMode;
+    private FooterRefreshMode footerRefreshMode;
     private RefreshState headerRefreshState = RefreshState.PULL_2_REFRESH;
     private RefreshState footerRefreshState = RefreshState.REFRESHING;
 
@@ -47,6 +47,12 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
     private int footerHeight;
     private int startY;
     private int firstVisibleItemPosition;
+
+    private void init(){
+        setOnScrollListener(this);
+        setHeaderRefreshMode(HeaderRefreshMode.CLOSE);
+        setFooterRefreshMode(FooterRefreshMode.CLOSE);
+    }
 
     /**
      * 获取顶部刷新模式
@@ -58,7 +64,7 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
     }
 
     /**
-     * 获取底部刷新模式
+     * 获取底部刷新模式,见FooterRefreshMode
      *
      * @return FooterRefreshMode 底部刷新模式
      */
@@ -67,12 +73,15 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
     }
 
     /**
-     * 设置顶部刷新模式
+     * 设置顶部刷新模式,见HeaderRfreshMode
      *
      * @param headerRefreshMode 顶部刷新模式
      */
     public void setHeaderRefreshMode(HeaderRefreshMode headerRefreshMode) {
         this.headerRefreshMode = headerRefreshMode;
+        if(headerRefreshMode == HeaderRefreshMode.PULL){
+            headerRefreshState = RefreshState.PULL_2_REFRESH;
+        }
     }
 
     /**
@@ -82,17 +91,36 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
      */
     public void setFooterRefreshMode(FooterRefreshMode footerRefreshMode) {
         this.footerRefreshMode = footerRefreshMode;
+        if(footerRefreshMode == FooterRefreshMode.AUTO){
+            footerRefreshState = RefreshState.REFRESHING;
+        } else if(footerRefreshMode == FooterRefreshMode.CLICK){
+            footerRefreshState = RefreshState.CLICK_2_REFRESH;
+        } else if(footerRefreshMode == FooterRefreshMode.PULL){
+            footerRefreshState = RefreshState.PULL_2_REFRESH;
+        }
     }
 
+    /**
+     * 设置开启下拉刷新,刷新view使用默认宽高度,默认下拉模式 HeaderRefreshMode.PULL
+     */
     protected void setHeaderEnable() {
         headerLayoutParams = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.default_header_height));
         setHeaderEnable(headerLayoutParams, HeaderRefreshMode.PULL);
     }
 
+    /**
+     * 设置开启下拉刷新,默认下拉模式为 HeaderRefreshMode.PULL
+     * @param layoutParams 下拉view的layoutparams
+     */
     protected void setHeaderView(AbsListView.LayoutParams layoutParams) {
         setHeaderEnable(layoutParams, HeaderRefreshMode.PULL);
     }
 
+    /**
+     * 设置开启下拉刷新
+     * @param layoutParams 下拉view的layoutparams
+     * @param headerRefreshMode 刷新模式,见HeaderRfreshMode
+     */
     protected void setHeaderEnable(AbsListView.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
         this.headerRefreshMode = headerRefreshMode;
         headerLayoutParams = layoutParams;
@@ -104,15 +132,27 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
         setPadding(getPaddingLeft(), -headerHeight, getPaddingRight(), getPaddingBottom());
     }
 
+    /**
+     * 设置开启上拉刷新,刷新view使用默认宽高度,默认上拉模式 FooterRefreshMode.AUTO
+     */
     protected void setFooterEnable() {
         footerLayoutParams = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.default_footer_height));
         setFooterEnable(footerLayoutParams, FooterRefreshMode.AUTO);
     }
 
+    /**
+     * 设置开启上拉刷新,默认上拉模式为 FooterRefreshMode.AUTO
+     * @param layoutParams 上拉view的layoutparams
+     */
     protected void setFooterEnable(AbsListView.LayoutParams layoutParams) {
         setFooterEnable(layoutParams, FooterRefreshMode.AUTO);
     }
 
+    /**
+     * 设置开启上拉刷新
+     * @param layoutParams 上拉view的layoutparams
+     * @param footerRefreshMode 刷新模式,FooterRefreshMode
+     */
     protected void setFooterEnable(AbsListView.LayoutParams layoutParams, FooterRefreshMode footerRefreshMode) {
         this.footerRefreshMode = footerRefreshMode;
         footerLayoutParams = layoutParams;
@@ -226,20 +266,35 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
         }
     }
 
+    /**
+     * 设置下拉刷新监听
+     * @param onHeaderRefreshListener 下拉刷新监听
+     */
     public void setOnHeaderRefreshListener(OnHeaderRefreshListener onHeaderRefreshListener) {
         this.onHeaderRefreshListener = onHeaderRefreshListener;
     }
 
+    /**
+     * 设置上拉刷新监听
+     * @param onFooterRefreshListener 上拉刷新监听
+     */
     public void setOnFooterRefreshListener(OnFooterRefreshListener onFooterRefreshListener) {
         this.onFooterRefreshListener = onFooterRefreshListener;
     }
 
+    /**
+     * 通知下拉刷新已经完成,在你期望结束下拉刷新时需要调用此方法
+     */
     public void notifyHeaderRefreshFinished() {
         headerRefreshState = RefreshState.PULL_2_REFRESH;
         changeHeaderView();
         setPadding(getPaddingLeft(), -headerHeight, getPaddingRight(), getPaddingBottom());
     }
 
+    /**
+     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用次方法
+     * @param refreshState 设置本次刷新结束后下拉view的状态,因为此次刷新结束后可能需要显示"已无更多"的提示
+     */
     public void notifyFooterRefreshFinished(RefreshState refreshState){
         footerRefreshState = refreshState;
         changeFooterView();
@@ -248,10 +303,19 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
         if(getLastVisiblePosition() == getCount()-1){
-            if(footerRefreshMode == FooterRefreshMode.AUTO){
+            if(footerRefreshState != RefreshState.REFRESHING && footerRefreshMode == FooterRefreshMode.AUTO){
                 footerRefreshState = RefreshState.REFRESHING;
                 changeFooterView();
                 onFooterRefreshListener.onFooterRefresh(footerView);
+            }else if(footerRefreshState != RefreshState.REFRESHING && footerRefreshMode == FooterRefreshMode.CLICK){
+                footerRefreshState = RefreshState.CLICK_2_REFRESH;
+                changeFooterView();
+                footerView.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onFooterRefreshListener.onFooterRefresh(footerView);
+                    }
+                });
             }
         }
 
