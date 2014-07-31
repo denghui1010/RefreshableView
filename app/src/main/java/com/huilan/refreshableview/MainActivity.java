@@ -1,8 +1,8 @@
 package com.huilan.refreshableview;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.Random;
 
 
-public class MainActivity extends ActionBarActivity implements OnHeaderRefreshListener,OnFooterRefreshListener{
+public class MainActivity extends Activity implements OnHeaderRefreshListener,OnFooterRefreshListener{
 
     private RefreshableListView refreshlistview;
 
@@ -35,6 +35,8 @@ public class MainActivity extends ActionBarActivity implements OnHeaderRefreshLi
         refreshlistview = (RefreshableListView) findViewById(R.id.rl_list);
         refreshlistview.setHeaderEnable();
         refreshlistview.setFooterEnable();
+        refreshlistview.setHeaderRefreshMode(HeaderRefreshMode.PULL);
+        refreshlistview.setFooterRefreshMode(FooterRefreshMode.CLICK);
         list = new LinkedList<String>();
         for (int i = 0; i < 30; ++i) {
             list.add("这是listview的数据" + i);
@@ -48,13 +50,13 @@ public class MainActivity extends ActionBarActivity implements OnHeaderRefreshLi
             protected Void doInBackground(Void... params) {
                 Random random = new Random();
                 int temp = random.nextInt(5) + 1;
-                for (int i = 0; i < temp; ++i, ++count) {
-                    list.addFirst("这是下拉刷新出来的数据" + count);
-                }
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(3000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                }
+                for (int i = 0; i < temp; ++i, ++count) {
+                    list.addFirst("这是下拉刷新出来的数据" + count);
                 }
                 return null;
             }
@@ -74,13 +76,13 @@ public class MainActivity extends ActionBarActivity implements OnHeaderRefreshLi
             protected Void doInBackground(Void... params) {
                 Random random = new Random();
                 int temp = random.nextInt(5) + 10;
-                for (int i = 0; i < temp; ++i, ++count) {
-                    list.add("这是加载更多出来的数据" + count);
-                }
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(3000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                }
+                for (int i = 0; i < temp; ++i, ++count) {
+                    list.add("这是加载更多出来的数据" + count);
                 }
                 return null;
             }
@@ -88,7 +90,7 @@ public class MainActivity extends ActionBarActivity implements OnHeaderRefreshLi
             @Override
             protected void onPostExecute(Void result) {
                 myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyFooterRefreshFinished(RefreshState.REFRESHING);
+                refreshlistview.notifyFooterRefreshFinished(RefreshState.CLICK_2_REFRESH);
             }
         }.execute();
     }

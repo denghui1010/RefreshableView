@@ -7,7 +7,6 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/default_header_height"
-        android:background="#ffbcbcbc"
         android:gravity="center">
 
         <RelativeLayout
@@ -26,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_centerInParent="true"
-                android:src="@drawable/abc_ic_cab_done_holo_light" />
+                android:src="@drawable/header_pull_arrow" />
         </RelativeLayout>
 
 
