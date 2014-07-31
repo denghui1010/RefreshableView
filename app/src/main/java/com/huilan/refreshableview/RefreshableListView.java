@@ -24,6 +24,8 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
     private ProgressBar header_progressbar;
     private RotateAnimation rotateAnimation0_180;
     private RotateAnimation rotateAnimation180_360;
+    private ProgressBar footer_progressbar;
+    private ImageView footer_image;
 
     public RefreshableListView(Context context) {
         super(context);
@@ -54,7 +56,7 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
     private int startY;
     private int firstVisibleItemPosition;
 
-    private void init(){
+    private void init() {
         setOnScrollListener(this);
 //        setHeaderRefreshMode(HeaderRefreshMode.CLOSE);
 //        setFooterRefreshMode(FooterRefreshMode.CLOSE);
@@ -85,7 +87,7 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
      */
     public void setHeaderRefreshMode(HeaderRefreshMode headerRefreshMode) {
         this.headerRefreshMode = headerRefreshMode;
-        if(headerRefreshMode == HeaderRefreshMode.PULL){
+        if (headerRefreshMode == HeaderRefreshMode.PULL) {
             initAnimation();
             headerRefreshState = RefreshState.PULL_2_REFRESH;
         }
@@ -99,11 +101,11 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
      */
     public void setFooterRefreshMode(FooterRefreshMode footerRefreshMode) {
         this.footerRefreshMode = footerRefreshMode;
-        if(footerRefreshMode == FooterRefreshMode.AUTO){
+        if (footerRefreshMode == FooterRefreshMode.AUTO) {
             footerRefreshState = RefreshState.LOAD_MORE;
-        } else if(footerRefreshMode == FooterRefreshMode.CLICK){
+        } else if (footerRefreshMode == FooterRefreshMode.CLICK) {
             footerRefreshState = RefreshState.CLICK_2_REFRESH;
-        } else if(footerRefreshMode == FooterRefreshMode.PULL){
+        } else if (footerRefreshMode == FooterRefreshMode.PULL) {
             footerRefreshState = RefreshState.PULL_2_REFRESH;
         }
         changeFooterView();
@@ -112,68 +114,72 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
     /**
      * 设置开启下拉刷新,刷新view使用默认宽高度,默认下拉模式 HeaderRefreshMode.PULL
      */
-    protected void setHeaderEnable() {
+    public void setHeaderEnable() {
         headerLayoutParams = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.default_header_height));
         setHeaderEnable(headerLayoutParams, HeaderRefreshMode.PULL);
     }
 
     /**
      * 设置开启下拉刷新,默认下拉模式为 HeaderRefreshMode.PULL
+     *
      * @param layoutParams 下拉view的layoutparams
      */
-    protected void setHeaderEnable(AbsListView.LayoutParams layoutParams) {
+    public void setHeaderEnable(AbsListView.LayoutParams layoutParams) {
         setHeaderEnable(layoutParams, HeaderRefreshMode.PULL);
     }
 
     /**
      * 设置开启下拉刷新
-     * @param layoutParams 下拉view的layoutparams
+     *
+     * @param layoutParams      下拉view的layoutparams
      * @param headerRefreshMode 刷新模式,见HeaderRfreshMode
      */
-    protected void setHeaderEnable(AbsListView.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
+    public void setHeaderEnable(AbsListView.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
         createHeaderView();
+        setHeaderRefreshMode(headerRefreshMode);
         headerLayoutParams = layoutParams;
         headerView.setLayoutParams(layoutParams);
         addHeaderView(headerView);
-//        measureView(headerView);
-        setHeaderRefreshMode(headerRefreshMode);
+        measureView(headerView);
+        headerHeight = headerView.getMeasuredHeight();
+        setPadding(getPaddingLeft(), -headerHeight, getPaddingRight(), getPaddingBottom());
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        headerHeight = headerView.getMeasuredHeight();
-        setPadding(getPaddingLeft(), -headerHeight, getPaddingRight(), getPaddingBottom());
     }
 
     /**
      * 设置开启上拉刷新,刷新view使用默认宽高度,默认上拉模式 FooterRefreshMode.AUTO
      */
-    protected void setFooterEnable() {
+    public void setFooterEnable() {
         footerLayoutParams = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.default_footer_height));
         setFooterEnable(footerLayoutParams, FooterRefreshMode.AUTO);
     }
 
     /**
      * 设置开启上拉刷新,默认上拉模式为 FooterRefreshMode.AUTO
+     *
      * @param layoutParams 上拉view的layoutparams
      */
-    protected void setFooterEnable(AbsListView.LayoutParams layoutParams) {
+    public void setFooterEnable(AbsListView.LayoutParams layoutParams) {
         setFooterEnable(layoutParams, FooterRefreshMode.AUTO);
     }
 
     /**
      * 设置开启上拉刷新
-     * @param layoutParams 上拉view的layoutparams
+     *
+     * @param layoutParams      上拉view的layoutparams
      * @param footerRefreshMode 刷新模式,FooterRefreshMode
      */
-    protected void setFooterEnable(AbsListView.LayoutParams layoutParams, FooterRefreshMode footerRefreshMode) {
+    public void setFooterEnable(AbsListView.LayoutParams layoutParams, FooterRefreshMode footerRefreshMode) {
         createFooterView();
+        setFooterRefreshMode(footerRefreshMode);
         footerLayoutParams = layoutParams;
         footerView.setLayoutParams(footerLayoutParams);
         addFooterView(footerView);
-//        measureView(footerView);
-        setFooterRefreshMode(footerRefreshMode);
+        measureView(footerView);
         footerHeight = footerView.getMeasuredHeight();
     }
 
@@ -189,22 +195,22 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
         footerView = View.inflate(getContext(), R.layout.layout_header, null);
         footer_text_1 = (TextView) footerView.findViewById(R.id.header_text_1);
         TextView footer_text_2 = (TextView) footerView.findViewById(R.id.header_text_2);
-        ProgressBar footer_progressbar = (ProgressBar) footerView.findViewById(R.id.header_progressbar);
-        ImageView footer_image = (ImageView) footerView.findViewById(R.id.header_image);
+        footer_progressbar = (ProgressBar) footerView.findViewById(R.id.header_progressbar);
+        footer_image = (ImageView) footerView.findViewById(R.id.header_image);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if(headerRefreshMode != HeaderRefreshMode.CLOSE){
+        if (headerRefreshMode != HeaderRefreshMode.CLOSE) {
             onTouchWhenHeaderRefreshEnable(event);
         }
-        if(footerRefreshMode != FooterRefreshMode.CLOSE){
+        if (footerRefreshMode != FooterRefreshMode.CLOSE) {
             onTouchWhenFooterRefreshEnable(event);
         }
         return super.onTouchEvent(event);
     }
 
-    private void onTouchWhenHeaderRefreshEnable(MotionEvent event){
+    private void onTouchWhenHeaderRefreshEnable(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startY = (int) event.getRawY();
@@ -214,22 +220,22 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
                 int dY = currY - startY;
                 if (firstVisibleItemPosition == 0 && dY > 0 && headerRefreshState != RefreshState.REFRESHING) {
 //                    System.out.println("padd" + getPaddingTop() + "dY" + dY +"pos"+firstVisibleItemPosition);
-                    setPadding(getPaddingLeft(), getPaddingTop() + dY/4 , getPaddingRight(), getPaddingBottom());
+                    setPadding(getPaddingLeft(), getPaddingTop() + dY / 4, getPaddingRight(), getPaddingBottom());
                     if (getPaddingTop() > 0 && headerRefreshState == RefreshState.PULL_2_REFRESH) {
                         headerRefreshState = RefreshState.RELEASE_2_REFRESH;
                         changeHeaderView();
                         header_image.startAnimation(rotateAnimation0_180);
                     }
-                } else if (dY < 0 && getPaddingTop()>-headerHeight) {
+                } else if (dY < 0 && getPaddingTop() > -headerHeight) {
                     if (getPaddingTop() <= headerHeight && headerRefreshState == RefreshState.RELEASE_2_REFRESH) {
                         headerRefreshState = RefreshState.PULL_2_REFRESH;
                         changeHeaderView();
                         header_image.startAnimation(rotateAnimation180_360);
                     }
-                    if(getPaddingTop()+dY<-headerHeight) {
+                    if (getPaddingTop() + dY < -headerHeight) {
                         setPadding(getPaddingLeft(), -headerHeight, getPaddingRight(), getPaddingBottom());
-                    }else {
-                        setPadding(getPaddingLeft(),getPaddingTop()+dY,getPaddingRight(),getPaddingBottom());
+                    } else {
+                        setPadding(getPaddingLeft(), getPaddingTop() + dY, getPaddingRight(), getPaddingBottom());
                     }
                 }
                 startY = currY;
@@ -239,17 +245,16 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
                     setPadding(getPaddingLeft(), 0, getPaddingRight(), getPaddingBottom());
                     headerRefreshState = RefreshState.REFRESHING;
                     changeHeaderView();
-                    header_image.startAnimation(rotateAnimation180_360);
                     onHeaderRefreshListener.onHeaderRefresh(headerView);
-                } else if (firstVisibleItemPosition == 0 &&headerRefreshState == RefreshState.PULL_2_REFRESH) {
+                } else if (firstVisibleItemPosition == 0 && headerRefreshState == RefreshState.PULL_2_REFRESH) {
                     setPadding(getPaddingLeft(), -headerHeight, getPaddingRight(), getPaddingBottom());
                 }
                 break;
         }
     }
 
-    private void onTouchWhenFooterRefreshEnable(MotionEvent event){
-        switch (event.getAction()){
+    private void onTouchWhenFooterRefreshEnable(MotionEvent event) {
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -262,44 +267,47 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
     private void changeHeaderView() {
         if (headerRefreshState == RefreshState.RELEASE_2_REFRESH) {
             header_text_1.setText("松开刷新");
-            header_image.setVisibility(View.VISIBLE);
-            header_progressbar.setVisibility(View.INVISIBLE);
-            System.out.println("release");
-        }
-        else if (headerRefreshState == RefreshState.REFRESHING) {
+            header_image.setVisibility(VISIBLE);
+            header_progressbar.setVisibility(INVISIBLE);
+        } else if (headerRefreshState == RefreshState.REFRESHING) {
             header_text_1.setText("正在刷新");
-            header_progressbar.setVisibility(View.VISIBLE);
-            header_image.setVisibility(View.INVISIBLE);
-            System.out.println("refresh");
-
-
-        }
-        else if (headerRefreshState == RefreshState.PULL_2_REFRESH) {
+            header_image.clearAnimation();
+            header_image.setVisibility(GONE);
+            header_progressbar.setVisibility(VISIBLE);
+        } else if (headerRefreshState == RefreshState.PULL_2_REFRESH) {
             header_text_1.setText("下拉刷新");
-            header_image.setVisibility(View.VISIBLE);
-            header_progressbar.setVisibility(View.INVISIBLE);
-            System.out.println("pull");
+            header_image.setVisibility(VISIBLE);
+            header_progressbar.setVisibility(INVISIBLE);
 
 
         }
     }
 
-    private void changeFooterView(){
-        if(footerRefreshState == RefreshState.RELEASE_2_REFRESH) {
-            footer_text_1.setText("松开刷新");
-        } else if(footerRefreshState == RefreshState.REFRESHING){
-            footer_text_1.setText("正在刷新");
-        } else if(footerRefreshState == RefreshState.PULL_2_REFRESH){
-            footer_text_1.setText("上拉刷新");
-        } else if(footerRefreshState == RefreshState.CLICK_2_REFRESH){
-            footer_text_1.setText("点击刷新");
-        } else if(footerRefreshState == RefreshState.LOAD_MORE){
+    private void changeFooterView() {
+        if (footerRefreshState == RefreshState.RELEASE_2_REFRESH) {
+            footer_text_1.setText("松开加载");
+            footer_image.setVisibility(GONE);
+            footer_progressbar.setVisibility(VISIBLE);
+        } else if (footerRefreshState == RefreshState.REFRESHING) {
+            footer_text_1.setText("正在加载");
+            footer_image.setVisibility(GONE);
+            footer_progressbar.setVisibility(VISIBLE);
+        } else if (footerRefreshState == RefreshState.PULL_2_REFRESH) {
+            footer_text_1.setText("上拉加载");
+        } else if (footerRefreshState == RefreshState.CLICK_2_REFRESH) {
+            footer_text_1.setText("点击加载");
+            footer_image.setVisibility(GONE);
+            footer_progressbar.setVisibility(GONE);
+        } else if (footerRefreshState == RefreshState.LOAD_MORE) {
             footer_text_1.setText("加载更多");
+            footer_image.setVisibility(GONE);
+            footer_progressbar.setVisibility(GONE);
         }
     }
 
     /**
      * 设置下拉刷新监听
+     *
      * @param onHeaderRefreshListener 下拉刷新监听
      */
     public void setOnHeaderRefreshListener(OnHeaderRefreshListener onHeaderRefreshListener) {
@@ -308,6 +316,7 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
 
     /**
      * 设置上拉刷新监听
+     *
      * @param onFooterRefreshListener 上拉刷新监听
      */
     public void setOnFooterRefreshListener(OnFooterRefreshListener onFooterRefreshListener) {
@@ -318,28 +327,31 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
      * 通知下拉刷新已经完成,在你期望结束下拉刷新时需要调用此方法
      */
     public void notifyHeaderRefreshFinished() {
-        headerRefreshState = RefreshState.PULL_2_REFRESH;
-        changeHeaderView();
+        setHeaderRefreshMode(headerRefreshMode);
         setPadding(getPaddingLeft(), -headerHeight, getPaddingRight(), getPaddingBottom());
     }
 
     /**
      * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法
-     * @param refreshState 设置本次刷新结束后下拉view的状态,因为此次刷新结束后可能需要显示"已无更多"的提示,RefreshState.NO_MORE是义务更多状态,RefreshState.LOAD_MORE重新回到加载更多状态
+     *
+     * @param hasMore 是否还有更多内容等待下次刷新,false:刷新view将默认显示"已无更多"
      */
-    public void notifyFooterRefreshFinished(RefreshState refreshState){
-        footerRefreshState = refreshState;
+    public void notifyFooterRefreshFinished(boolean hasMore) {
+        if(!hasMore) {
+            footerRefreshState = RefreshState.NO_MORE;
+        }
+        setFooterRefreshMode(footerRefreshMode);
         changeFooterView();
     }
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
-        if(getLastVisiblePosition() == getCount()-1){
-            if(footerRefreshState == RefreshState.LOAD_MORE && footerRefreshMode == FooterRefreshMode.AUTO){
+        if (getLastVisiblePosition() == getCount() - 1) {
+            if (footerRefreshState == RefreshState.LOAD_MORE && footerRefreshMode == FooterRefreshMode.AUTO) {
                 footerRefreshState = RefreshState.REFRESHING;
                 changeFooterView();
                 onFooterRefreshListener.onFooterRefresh(footerView);
-            }else if(footerRefreshState == RefreshState.CLICK_2_REFRESH && footerRefreshMode == FooterRefreshMode.CLICK){
+            } else if (footerRefreshState == RefreshState.CLICK_2_REFRESH && footerRefreshMode == FooterRefreshMode.CLICK) {
                 footerRefreshState = RefreshState.CLICK_2_REFRESH;
                 changeFooterView();
                 footerView.setOnClickListener(new OnClickListener() {
@@ -373,9 +385,7 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
         } else {
             childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         }
-        if(child!=null) {
-            child.measure(childWidthSpec, childHeightSpec);
-        }
+        child.measure(childWidthSpec, childHeightSpec);
     }
 
     private void measureView(View v, int width, int height) {
@@ -403,14 +413,13 @@ public class RefreshableListView extends ListView implements ListView.OnScrollLi
     }
 
 
-    private void initAnimation(){
+    private void initAnimation() {
         rotateAnimation0_180 = new RotateAnimation(0, 180, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         rotateAnimation0_180.setDuration(150);
         rotateAnimation0_180.setFillAfter(true);
         rotateAnimation180_360 = new RotateAnimation(180, 0, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         rotateAnimation180_360.setDuration(150);
         rotateAnimation180_360.setFillAfter(true);
-
     }
 
 

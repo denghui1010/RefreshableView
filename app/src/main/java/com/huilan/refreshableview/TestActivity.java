@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.Random;
 
 
-public class MainActivity extends Activity implements OnHeaderRefreshListener,OnFooterRefreshListener{
+public class TestActivity extends Activity implements OnHeaderRefreshListener,OnFooterRefreshListener{
 
     private RefreshableListView refreshlistview;
 
@@ -23,7 +23,7 @@ public class MainActivity extends Activity implements OnHeaderRefreshListener,On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_test);
         initView();
         myAdpter = new MyAdpter();
         refreshlistview.setAdapter(myAdpter);
@@ -36,7 +36,7 @@ public class MainActivity extends Activity implements OnHeaderRefreshListener,On
         refreshlistview.setHeaderEnable();
         refreshlistview.setFooterEnable();
         refreshlistview.setHeaderRefreshMode(HeaderRefreshMode.PULL);
-        refreshlistview.setFooterRefreshMode(FooterRefreshMode.CLICK);
+        refreshlistview.setFooterRefreshMode(FooterRefreshMode.AUTO);
         list = new LinkedList<String>();
         for (int i = 0; i < 30; ++i) {
             list.add("这是listview的数据" + i);
@@ -90,7 +90,7 @@ public class MainActivity extends Activity implements OnHeaderRefreshListener,On
             @Override
             protected void onPostExecute(Void result) {
                 myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyFooterRefreshFinished(RefreshState.CLICK_2_REFRESH);
+                refreshlistview.notifyFooterRefreshFinished(true);
             }
         }.execute();
     }
@@ -115,7 +115,7 @@ public class MainActivity extends Activity implements OnHeaderRefreshListener,On
         public View getView(int position, View convertView, ViewGroup parent) {
             TextView tv;
             if (convertView == null) {
-                tv = new TextView(MainActivity.this);
+                tv = new TextView(TestActivity.this);
             } else {
                 tv = (TextView) convertView;
             }
