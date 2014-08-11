@@ -64,7 +64,6 @@
       <sourceFolder url="file://$MODULE_DIR$/../../library/src/androidTest/rs" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/../../library/build/intermediates" />
       <excludeFolder url="file://$MODULE_DIR$/../../library/build/outputs" />
-      <excludeFolder url="file://$MODULE_DIR$/../../library/build/poms" />
       <excludeFolder url="file://$MODULE_DIR$/../../library/build/tmp" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 19 Platform" jdkType="Android SDK" />
