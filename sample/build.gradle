@@ -21,7 +21,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.huilan.refreshableview:refreshableview:0.3.0@aar'
+    compile 'com.huilan.refreshableview:library:0.3.0@aar'
 }
 
 repositories {
