@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.huilan.refreshableview.CustomView;
 import com.huilan.refreshableview.R;
+import com.huilan.refreshableview.RefreshResult;
 
 /**
  * Created by liudenghui on 14-8-8.
@@ -64,13 +65,19 @@ public class Click2LoadFooterView extends CustomView {
     }
 
     @Override
-    public void refreshFinished(boolean hasMore) {
-        if(hasMore){
-            originSate();
-        } else {
-            footer_text_1.setText("没有更多");
-            footer_image.setVisibility(GONE);
-            footer_progressbar.setVisibility(GONE);
+    protected void refreshFinished(RefreshResult result) {
+        switch (result){
+            case hasmore:
+                originSate();
+            case nomore:
+                footer_text_1.setText("没有更多");
+                footer_image.setVisibility(GONE);
+                footer_progressbar.setVisibility(GONE);
+                break;
+            case failure:
+                footer_text_1.setText("加载失败");
+                footer_image.setVisibility(GONE);
+                footer_progressbar.setVisibility(GONE);
         }
     }
 }

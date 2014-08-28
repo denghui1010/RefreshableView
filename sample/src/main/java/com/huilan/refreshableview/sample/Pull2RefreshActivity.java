@@ -9,6 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.huilan.refreshableview.OnHeaderRefreshListener;
+import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
 
 import java.util.LinkedList;
@@ -41,6 +42,7 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
         for (int i = 0; i < 30; ++i) {
             list.add("这是listview的数据" + i);
         }
+        refreshlistview.notifyHeaderRefreshStarted();
     }
 
     @Override
@@ -64,7 +66,7 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
             @Override
             protected void onPostExecute(Void result) {
                 myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyHeaderRefreshFinished();
+                refreshlistview.notifyHeaderRefreshFinished(RefreshResult.hasmore);
             }
         }.execute();
     }
@@ -93,6 +95,8 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
             } else {
                 tv = (TextView) convertView;
             }
+            tv.setClickable(false);
+            tv.setFocusable(false);
             tv.setTextSize(25);
             tv.setPadding(10, 10, 10, 10);
             tv.setText(list.get(position));

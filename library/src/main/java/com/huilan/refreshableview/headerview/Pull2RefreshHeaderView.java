@@ -1,6 +1,7 @@
 package com.huilan.refreshableview.headerview;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 
 import com.huilan.refreshableview.CustomView;
 import com.huilan.refreshableview.R;
+import com.huilan.refreshableview.RefreshResult;
 
 /**
  * Created by liudenghui on 14-8-8.
@@ -50,7 +52,7 @@ public class Pull2RefreshHeaderView extends CustomView {
     @Override
     public void originSate() {
         header_text_1.setText("下拉刷新");
-        header_image.startAnimation(rotateAnimation180_360);
+//        header_image.startAnimation(rotateAnimation180_360);
         header_image.setVisibility(VISIBLE);
         header_progressbar.setVisibility(INVISIBLE);
     }
@@ -58,7 +60,7 @@ public class Pull2RefreshHeaderView extends CustomView {
     @Override
     public void canRefresh() {
         header_text_1.setText("松开刷新");
-        header_image.startAnimation(rotateAnimation0_180);
+//        header_image.startAnimation(rotateAnimation0_180);
         header_image.setVisibility(VISIBLE);
         header_progressbar.setVisibility(INVISIBLE);
     }
@@ -66,14 +68,25 @@ public class Pull2RefreshHeaderView extends CustomView {
     @Override
     public void refreshing() {
         header_text_1.setText("正在刷新");
-        header_image.clearAnimation();
+//        header_image.clearAnimation();
         header_image.setVisibility(GONE);
         header_progressbar.setVisibility(VISIBLE);
     }
 
     @Override
-    public void refreshFinished(boolean hasMore) {
-        originSate();
+    protected void refreshFinished(RefreshResult result) {
+        switch (result){
+            case hasmore:
+            case nomore:
+                header_text_1.setText("刷新成功");
+                header_image.setVisibility(GONE);
+                header_progressbar.setVisibility(GONE);
+                break;
+            case failure:
+                header_text_1.setText("刷新失败");
+                header_image.setVisibility(GONE);
+                header_progressbar.setVisibility(GONE);
+        }
     }
 
     private void initAnimation() {

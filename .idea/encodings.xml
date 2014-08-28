@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false" />
+  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false">
+    <file url="file://$PROJECT_DIR$/../Android-PullToRefresh" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../Android-PullToRefresh/extras" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../Android-PullToRefresh/extras/PullToRefreshListFragment" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../Android-PullToRefresh/extras/PullToRefreshViewPager" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../Android-PullToRefresh/library" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../Android-PullToRefresh/sample" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/library/src/main/java/com/huilan/refreshableview/OverscrollHelper.java" charset="UTF-8" />
+  </component>
 </project>
 

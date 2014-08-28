@@ -36,8 +36,10 @@ public abstract class CustomView extends RelativeLayout{
     protected abstract void refreshing();
 
     /**
+    protected abstract void refreshFailure();
+
+    /**
      * 刷新结束后被回调
-     * @param hasMore 是否还有更多数据,写headerview时忽略此参数
      */
-    protected abstract void refreshFinished(boolean hasMore);
+    protected abstract void refreshFinished(RefreshResult result);
 }

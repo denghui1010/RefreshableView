@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.huilan.refreshableview.FooterRefreshMode;
 import com.huilan.refreshableview.OnFooterRefreshListener;
+import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
 
 import java.util.LinkedList;
@@ -65,7 +66,7 @@ public class Click2LoadActivity extends Activity implements OnFooterRefreshListe
             @Override
             protected void onPostExecute(Void result) {
                 myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyFooterRefreshFinished(true);
+                refreshlistview.notifyFooterRefreshFinished(RefreshResult.hasmore);
             }
         }.execute();
     }

@@ -18,6 +18,7 @@
         <activity android:name=".Click2LoadActivity" />
         <activity android:name=".AutoLoadActivity" />
         <activity android:name=".Pull2RefreshActivity" />
+        <activity android:name=".TestActivity" />
     </application>
 
 </manifest>

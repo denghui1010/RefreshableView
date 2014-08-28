@@ -33,23 +33,16 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
 
     @Override
     protected ListView createContentView() {
-        listView = new ListView(getContext());
+        listView = new MyListView(getContext());
         return listView;
     }
 
     private void init(){
         listView.setOnScrollListener(this);
-        listView.setFadingEdgeLength(0);
-        listView.setBackgroundColor(Color.WHITE);
-//        setBackgroundDrawable(new BitmapDrawable());
-//        setBackgroundColor(Color.LTGRAY);
-        listView.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                onTouchEvent(event);
-                return false;
-            }
-        });
+        listView.setSelected(false);
+        listView.setOverScrollMode(OVER_SCROLL_NEVER);
+        listView.setHeaderDividersEnabled(true);
+        listView.setFooterDividersEnabled(true);
     }
 
     @Override
@@ -61,7 +54,6 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
                 onFooterRefreshListener.onFooterRefresh();
             }
         }
-
     }
 
     @Override

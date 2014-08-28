@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.huilan.refreshableview.FooterRefreshMode;
 import com.huilan.refreshableview.OnFooterRefreshListener;
+import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
 
 import java.util.LinkedList;
@@ -62,7 +63,7 @@ public class AutoLoadActivity extends Activity implements OnFooterRefreshListene
             @Override
             protected void onPostExecute(Void result) {
                 myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyFooterRefreshFinished(true);
+                refreshlistview.notifyFooterRefreshFinished(RefreshResult.hasmore);
             }
         }.execute();
     }
