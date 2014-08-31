@@ -52,7 +52,7 @@ public class Pull2RefreshHeaderView extends CustomView {
     @Override
     public void originSate() {
         header_text_1.setText("下拉刷新");
-//        header_image.startAnimation(rotateAnimation180_360);
+        header_image.startAnimation(rotateAnimation180_360);
         header_image.setVisibility(VISIBLE);
         header_progressbar.setVisibility(INVISIBLE);
     }
@@ -60,7 +60,7 @@ public class Pull2RefreshHeaderView extends CustomView {
     @Override
     public void canRefresh() {
         header_text_1.setText("松开刷新");
-//        header_image.startAnimation(rotateAnimation0_180);
+        header_image.startAnimation(rotateAnimation0_180);
         header_image.setVisibility(VISIBLE);
         header_progressbar.setVisibility(INVISIBLE);
     }
@@ -68,7 +68,7 @@ public class Pull2RefreshHeaderView extends CustomView {
     @Override
     public void refreshing() {
         header_text_1.setText("正在刷新");
-//        header_image.clearAnimation();
+        header_image.clearAnimation();
         header_image.setVisibility(GONE);
         header_progressbar.setVisibility(VISIBLE);
     }

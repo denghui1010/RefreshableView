@@ -25,4 +25,14 @@ public class RefreshableGridView extends RefreshableBase<GridView> {
         GridView gridView = new GridView(getContext());
         return null;
     }
+
+    @Override
+    protected boolean isContentViewAtBottom() {
+        return false;
+    }
+
+    @Override
+    protected boolean isContentViewAtTop() {
+        return false;
+    }
 }

@@ -5,10 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.huilan.refreshableview.RefreshableTestView
+    <com.huilan.refreshableview.RefreshableScrollView
+        android:id="@+id/scrollview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        </com.huilan.refreshableview.RefreshableTestView>
+        android:layout_height="match_parent" />
 
 </LinearLayout>

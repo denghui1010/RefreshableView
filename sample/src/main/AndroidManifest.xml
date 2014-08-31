@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.huilan.refreshableview.sample" >
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -18,7 +20,9 @@
         <activity android:name=".Click2LoadActivity" />
         <activity android:name=".AutoLoadActivity" />
         <activity android:name=".Pull2RefreshActivity" />
-        <activity android:name=".TestActivity" />
+        <activity android:name=".ExpandableListActivity" />
+        <activity android:name=".WebViewActivity" />
+        <activity android:name=".ScrollViewActivity" />
     </application>
 
 </manifest>

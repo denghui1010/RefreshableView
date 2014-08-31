@@ -1,25 +1,19 @@
 package com.huilan.refreshableview;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
-import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-
-import com.huilan.refreshableview.footerview.AutoLoadFooterView;
-import com.huilan.refreshableview.footerview.Click2LoadFooterView;
-import com.huilan.refreshableview.headerview.Pull2RefreshHeaderView;
 
 /**
  * Created by liudenghui on 14-7-29.
  */
 public class RefreshableListView extends RefreshableBase<ListView> implements ListView.OnScrollListener {
-    private ListView listView;
+    private ListView mListView;
 
     public RefreshableListView(Context context) {
         super(context);
@@ -31,23 +25,29 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
         init();
     }
 
-    @Override
-    protected ListView createContentView() {
-        listView = new MyListView(getContext());
-        return listView;
+    public void addFooterView(View view) {
+        mListView.addFooterView(view);
     }
 
-    private void init(){
-        listView.setOnScrollListener(this);
-        listView.setSelected(false);
-        listView.setOverScrollMode(OVER_SCROLL_NEVER);
-        listView.setHeaderDividersEnabled(true);
-        listView.setFooterDividersEnabled(true);
+    public void addHeaderView(View view) {
+        mListView.addHeaderView(view);
+    }
+
+    public int getFooterViewsCount() {
+        return mListView.getFooterViewsCount();
+    }
+
+    public int getHeaderViewsCount() {
+        return mListView.getHeaderViewsCount();
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
     }
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
-        if (listView.getLastVisiblePosition() == listView.getCount() - 1) {
+        if (mListView.getLastVisiblePosition() == mListView.getCount() - 1) {
             if (footerRefreshState == RefreshState.ORIGIN_STATE && footerRefreshMode == FooterRefreshMode.AUTO) {
                 footerRefreshState = RefreshState.REFRESHING;
                 footerView.refreshing();
@@ -56,15 +56,41 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
         }
     }
 
+    public void setAdapter(ListAdapter adapter) {
+        mListView.setAdapter(adapter);
+    }
+
+    public void setDivider(Drawable divider) {
+        mListView.setDivider(divider);
+    }
+
+    public void setOnItemClickListener(AdapterView.OnItemClickListener listener) {
+        mListView.setOnItemClickListener(listener);
+    }
+
     @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-        this.firstVisibleItemPosition = firstVisibleItem;
-        if(firstVisibleItemPosition==0){
-
-        }
+    protected ListView createContentView() {
+        mListView = new ListView(getContext());
+        return mListView;
     }
 
-    public void setAdapter(ListAdapter adapter){
-        listView.setAdapter(adapter);
+    protected boolean isContentViewAtBottom() {
+        return mListView.getLastVisiblePosition() == mListView.getCount() - 1;
     }
+
+    protected boolean isContentViewAtTop() {
+        return mListView.getFirstVisiblePosition() == 0;
+    }
+
+    private void init() {
+        mListView.setOnScrollListener(this);
+        mListView.setSelected(false);
+        mListView.setOverScrollMode(OVER_SCROLL_NEVER);
+        mListView.setHeaderDividersEnabled(true);
+        mListView.setFooterDividersEnabled(true);
+        mListView.setPadding(getResources().getDimensionPixelSize(R.dimen.default_paddingleft), 0,
+                             getResources().getDimensionPixelSize(R.dimen.default_paddingright), 0);
+        mListView.setScrollBarStyle(SCROLLBARS_OUTSIDE_OVERLAY);
+    }
+
 }

@@ -22,4 +22,22 @@
         android:layout_height="wrap_content"
         android:text="点击加载"
         android:onClick="click_load"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="scrollview"
+        android:onClick="scrollview"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="expandlistview"
+        android:onClick="expandlistview"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="webview"
+        android:onClick="webview"/>
 </LinearLayout>

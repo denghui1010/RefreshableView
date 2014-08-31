@@ -7,7 +7,6 @@
     <file url="file://$PROJECT_DIR$/../Android-PullToRefresh/extras/PullToRefreshViewPager" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/../Android-PullToRefresh/library" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/../Android-PullToRefresh/sample" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/library/src/main/java/com/huilan/refreshableview/OverscrollHelper.java" charset="UTF-8" />
   </component>
 </project>
 
