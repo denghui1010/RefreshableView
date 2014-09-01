@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseExpandableListAdapter;
@@ -42,6 +43,20 @@ public class RefreshableExpandableListView extends RefreshableBase<ExpandableLis
 
     public int getHeaderViewsCount() {
         return mExpandableListView.getHeaderViewsCount();
+    }
+
+    public void setEmptyView(final View emptyView){
+        addView(emptyView);
+        mExpandableListView.setEmptyView(emptyView);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                ViewGroup.LayoutParams layoutParams = emptyView.getLayoutParams();
+                layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                layoutParams.height = getMeasuredHeight();
+                emptyView.setLayoutParams(layoutParams);
+            }
+        });
     }
 
     @Override

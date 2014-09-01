@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
@@ -67,6 +68,21 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
     public void setOnItemClickListener(AdapterView.OnItemClickListener listener) {
         mListView.setOnItemClickListener(listener);
     }
+
+    public void setEmptyView(final View emptyView){
+        addView(emptyView);
+        mListView.setEmptyView(emptyView);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                ViewGroup.LayoutParams layoutParams = emptyView.getLayoutParams();
+                layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                layoutParams.height = getMeasuredHeight();
+                emptyView.setLayoutParams(layoutParams);
+            }
+        });
+    }
+
 
     @Override
     protected ListView createContentView() {

@@ -11,10 +11,14 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.Adapter;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Scroller;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by liudenghui on 14-7-29.
@@ -47,6 +51,9 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     private int canRefreshDis;
 
     private Scroller scroller;
+    private OnSmoothScrollListener mListener;
+    private long mLastHeaderTime;
+
 
     public RefreshableBase(Context context) {
         super(context);
@@ -69,6 +76,10 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         if (scroller.computeScrollOffset()) {
             scrollTo(scroller.getCurrX(), scroller.getCurrY());
             postInvalidate();
+            if(scroller.isFinished() && mListener != null){
+                mListener.onSmoothScrollFinish();
+                mListener = null;
+            }
         }
         super.computeScroll();
     }
@@ -129,30 +140,76 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     }
 
     /**
-     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,1秒后会隐藏footerview
+     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,1秒后会隐藏footerview,请使用带适配器参数的方法以获得更好的效果
      *
      * @param result 刷新结果
      */
+    @Deprecated
     public void notifyHeaderRefreshFinished(RefreshResult result) {
         notifyHeaderRefreshFinished(result, 1000);
     }
 
     /**
-     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,延迟一定时间后收起headererview
+     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,1秒后会隐藏footerview,该方法会自动刷新适配器,无需额外的手动调用
+     *
+     * @param result 刷新结果
+     * @param adapter 需要刷新的适配器
+     */
+    public void notifyHeaderRefreshFinished(RefreshResult result, BaseAdapter adapter) {
+        notifyHeaderRefreshFinished(result, 1000);
+    }
+
+
+    /**
+     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,延迟一定时间后收起headererview,请使用带适配器参数的方法以获得更好的效果
      * @param result 刷新结果
      * @param millis 延迟毫秒值
      */
-    public void notifyHeaderRefreshFinished(RefreshResult result, int millis) {
-        this.headerView.refreshFinished(result);
+    @Deprecated
+    public void notifyHeaderRefreshFinished(final RefreshResult result, int millis) {
+        notifyHeaderRefreshFinished(result, null, millis);
+    }
+
+    /**
+     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,延迟一定时间后收起headererview,该方法会自动刷新适配器,无需额外的手动调用
+     * @param result 刷新结果
+     * @param adapter 需要刷新的适配器
+     * @param millis 延迟毫秒值
+     */
+    public void notifyHeaderRefreshFinished(final RefreshResult result, final BaseAdapter adapter, int millis){
+        long l = System.currentTimeMillis() - mLastHeaderTime;
+        if(l<800){
+            l = 1000;
+        }
         postDelayed(new Runnable() {
+            @Override
             public void run() {
-                headerRefreshState = RefreshState.ORIGIN_STATE;
-                headerView.originSate();
-                if (getScrollY() <= 0) {
-                    smoothScrollTo(0, headerHeight);
+                headerView.refreshFinished(result);
+                if(adapter!= null){
+                    adapter.notifyDataSetChanged();
                 }
             }
-        }, millis);
+        }, l);
+//        headerView.refreshFinished(result);
+        postDelayed(new Runnable() {
+            public void run() {
+                if (getScrollY() <= 0) {
+                    mListener = new OnSmoothScrollListener() {
+                        @Override
+                        public void onSmoothScrollStart() {
+
+                        }
+
+                        @Override
+                        public void onSmoothScrollFinish() {
+                            headerRefreshState = RefreshState.ORIGIN_STATE;
+                            headerView.originSate();
+                        }
+                    };
+                    smoothScrollTo(0, headerHeight, mListener);
+                }
+            }
+        }, l+millis);
     }
 
     /**
@@ -174,12 +231,13 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         }
         postDelayed(new Runnable() {
             public void run() {
+                mLastHeaderTime = System.currentTimeMillis();
                 headerRefreshState = RefreshState.REFRESHING;
                 headerView.refreshing();
-                smoothScrollTo(0, 0);
                 if (onHeaderRefreshListener != null) {
                     onHeaderRefreshListener.onHeaderRefresh();
                 }
+                smoothScrollTo(0, 0, null);
             }
         }, millis);
     }
@@ -274,12 +332,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         } else {
             addView(footerView);
         }
-        post(new Runnable() {
-            @Override
-            public void run() {
-                footerHeight = footerView.getMeasuredHeight();
-            }
-        });
         footerView.originSate();
     }
 
@@ -324,15 +376,20 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         headerLayoutParams = layoutParams;
         headerView.setLayoutParams(layoutParams);
         addView(headerView, 0);
-        post(new Runnable() {
-            @Override
-            public void run() {
-                headerHeight = headerView.getMeasuredHeight();
-                canRefreshDis = headerHeight;
-                scrollTo(0, headerHeight);
-            }
-        });
         headerView.originSate();
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        if(headerView!=null && headerHeight == 0) {
+            headerHeight = headerView.getMeasuredHeight();
+            canRefreshDis = headerHeight;
+            scrollTo(0, headerHeight);
+        }
+        if(footerView!=null && footerHeight == 0) {
+            footerHeight = footerView.getMeasuredHeight();
+        }
+        super.onLayout(changed, l, t, r, b);
     }
 
     /**
@@ -422,7 +479,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startY = (int) event.getRawY();
-                contentView.setVerticalScrollBarEnabled(false);
                 break;
             case MotionEvent.ACTION_MOVE:
                 int currY = (int) event.getRawY();
@@ -447,26 +503,39 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
                 startY = currY;
                 break;
             case MotionEvent.ACTION_UP:
-                contentView.setVerticalScrollBarEnabled(true);
                 if (headerRefreshState == RefreshState.CAN_REFRESH) {
-                    smoothScrollTo(0, 0);
                     headerRefreshState = RefreshState.REFRESHING;
                     headerView.refreshing();
                     onHeaderRefreshListener.onHeaderRefresh();
+                    mLastHeaderTime = System.currentTimeMillis();
+                    smoothScrollTo(0, 0, null);
+
                 } else {
-                    smoothScrollTo(0, headerHeight);
+                    smoothScrollTo(0, headerHeight, null);
                 }
         }
         return true;
     }
 
-    private void smoothScrollBy(int dx, int dy) {
-        this.scroller.startScroll(getScrollX(), getScrollY(), dx, dy, this.scrollDurationFactor * Math.abs(dy));
+    private void smoothScrollBy(int dx, int dy, OnSmoothScrollListener listener) {
+        if(!scroller.isFinished()){
+            scroller.abortAnimation();
+        }
+        scroller.startScroll(getScrollX(), getScrollY(), dx, dy, scrollDurationFactor * Math.abs(dy));
+        if(listener != null){
+            listener.onSmoothScrollStart();
+        }
         postInvalidate();
     }
 
-    private void smoothScrollTo(int x, int y) {
-        smoothScrollBy(x - getScrollX(), y - getScrollY());
+    private void smoothScrollTo(int x, int y, OnSmoothScrollListener listener) {
+        smoothScrollBy(x - getScrollX(), y - getScrollY(), listener);
+
+    }
+
+    private interface OnSmoothScrollListener {
+        void onSmoothScrollStart();
+        void onSmoothScrollFinish();
     }
 
 }
