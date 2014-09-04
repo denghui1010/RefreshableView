@@ -68,8 +68,10 @@ public class AutoLoadFooterView extends CustomView {
     protected void refreshFinished(RefreshResult result) {
         switch (result){
             case hasmore:
+                originSate();
+                break;
             case nomore:
-                footer_text_1.setText("加载成功");
+                footer_text_1.setText("没有更多");
                 footer_image.setVisibility(GONE);
                 footer_progressbar.setVisibility(GONE);
                 break;
@@ -77,6 +79,7 @@ public class AutoLoadFooterView extends CustomView {
                 footer_text_1.setText("加载失败");
                 footer_image.setVisibility(GONE);
                 footer_progressbar.setVisibility(GONE);
+                break;
         }
     }
 }

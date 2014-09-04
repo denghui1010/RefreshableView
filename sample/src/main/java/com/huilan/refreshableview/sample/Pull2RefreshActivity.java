@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.huilan.refreshableview.NotifyListener;
 import com.huilan.refreshableview.OnHeaderRefreshListener;
 import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
@@ -53,7 +54,7 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
                 Random random = new Random();
                 int temp = random.nextInt(5) + 1;
                 try {
-                    Thread.sleep(3000);
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -65,8 +66,12 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
 
             @Override
             protected void onPostExecute(Void result) {
-                myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyHeaderRefreshFinished(RefreshResult.hasmore);
+                refreshlistview.notifyHeaderRefreshFinished(RefreshResult.hasmore, new NotifyListener() {
+                    @Override
+                    public void notifyDataSetChanged() {
+                        myAdpter.notifyDataSetChanged();
+                    }
+                });
             }
         }.execute();
     }

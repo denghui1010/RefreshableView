@@ -40,4 +40,10 @@
         android:layout_height="wrap_content"
         android:text="webview"
         android:onClick="webview"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="imagepager"
+        android:onClick="imagepager"/>
 </LinearLayout>

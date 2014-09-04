@@ -23,6 +23,7 @@
         <activity android:name=".ExpandableListActivity" />
         <activity android:name=".WebViewActivity" />
         <activity android:name=".ScrollViewActivity" />
+        <activity android:name=".ImagePagerActivity" />
     </application>
 
 </manifest>

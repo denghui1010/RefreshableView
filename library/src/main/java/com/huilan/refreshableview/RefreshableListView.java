@@ -10,11 +10,15 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by liudenghui on 14-7-29.
  */
 public class RefreshableListView extends RefreshableBase<ListView> implements ListView.OnScrollListener {
     private ListView mListView;
+    private List<View> mHeaderViews = new ArrayList<View>();
 
     public RefreshableListView(Context context) {
         super(context);
@@ -23,6 +27,10 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
 
     public RefreshableListView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        int divider = attrs.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "divider", 0x0);
+        if (divider != 0x0) {
+            mListView.setDivider(getResources().getDrawable(divider));
+        }
         init();
     }
 
@@ -32,6 +40,12 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
 
     public void addHeaderView(View view) {
         mListView.addHeaderView(view);
+        mHeaderViews.add(view);
+    }
+
+    public void addHeaderView(View view, Object data, boolean isSelectable) {
+        mListView.addHeaderView(view, data, isSelectable);
+        mHeaderViews.add(view);
     }
 
     public int getFooterViewsCount() {
@@ -65,11 +79,7 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
         mListView.setDivider(divider);
     }
 
-    public void setOnItemClickListener(AdapterView.OnItemClickListener listener) {
-        mListView.setOnItemClickListener(listener);
-    }
-
-    public void setEmptyView(final View emptyView){
+    public void setEmptyView(final View emptyView) {
         addView(emptyView);
         mListView.setEmptyView(emptyView);
         post(new Runnable() {
@@ -83,6 +93,9 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
         });
     }
 
+    public void setOnItemClickListener(AdapterView.OnItemClickListener listener) {
+        mListView.setOnItemClickListener(listener);
+    }
 
     @Override
     protected ListView createContentView() {
@@ -95,17 +108,22 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
     }
 
     protected boolean isContentViewAtTop() {
-        return mListView.getFirstVisiblePosition() == 0;
+        if (mHeaderViews == null || mHeaderViews.size() == 0) {
+            return mListView.getFirstVisiblePosition() == 0;
+        }
+        View childAt = mListView.getChildAt(0);
+//        System.out.println("top"+childAt.getTop() +"padt"+getPaddingTop() + mListView.getPaddingTop());
+        return childAt == mHeaderViews.get(mHeaderViews.size() - 1) && childAt.getTop() >= mListView .getPaddingTop();
     }
 
     private void init() {
         mListView.setOnScrollListener(this);
-        mListView.setSelected(false);
         mListView.setOverScrollMode(OVER_SCROLL_NEVER);
         mListView.setHeaderDividersEnabled(true);
         mListView.setFooterDividersEnabled(true);
-        mListView.setPadding(getResources().getDimensionPixelSize(R.dimen.default_paddingleft), 0,
-                             getResources().getDimensionPixelSize(R.dimen.default_paddingright), 0);
+        mListView.setPadding(getResources().getDimensionPixelSize(R.dimen.default_paddingleft),
+                             getResources().getDimensionPixelOffset(R.dimen.default_paddingtop),
+                             getResources().getDimensionPixelOffset(R.dimen.default_paddingright), 0);
         mListView.setScrollBarStyle(SCROLLBARS_OUTSIDE_OVERLAY);
     }
 

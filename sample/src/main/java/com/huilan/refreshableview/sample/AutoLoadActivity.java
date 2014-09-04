@@ -63,7 +63,7 @@ public class AutoLoadActivity extends Activity implements OnFooterRefreshListene
             @Override
             protected void onPostExecute(Void result) {
                 myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyFooterRefreshFinished(RefreshResult.hasmore);
+                refreshlistview.notifyFooterRefreshFinished(RefreshResult.nomore);
             }
         }.execute();
     }

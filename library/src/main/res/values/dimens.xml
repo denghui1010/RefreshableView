@@ -8,4 +8,6 @@
 
     <dimen name="default_paddingleft">10dp</dimen>
     <dimen name="default_paddingright">10dp</dimen>
+    <dimen name="default_paddingtop">10dp</dimen>
+
 </resources>

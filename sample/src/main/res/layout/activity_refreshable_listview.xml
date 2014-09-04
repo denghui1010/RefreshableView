@@ -7,6 +7,7 @@
 
     <com.huilan.refreshableview.RefreshableListView
         android:id="@+id/rl_list"
+        android:divider="@drawable/hl_item_divider_line"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

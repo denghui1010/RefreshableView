@@ -10,12 +10,16 @@ import android.widget.AdapterView;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by liudenghui on 14-8-29.
  */
 public class RefreshableExpandableListView extends RefreshableBase<ExpandableListView>
         implements AbsListView.OnScrollListener {
     private ExpandableListView mExpandableListView;
+    private List<View> mHeaderViews = new ArrayList<View>();
 
     public RefreshableExpandableListView(Context context) {
         super(context);
@@ -35,6 +39,12 @@ public class RefreshableExpandableListView extends RefreshableBase<ExpandableLis
 
     public void addHeaderView(View view) {
         mExpandableListView.addHeaderView(view);
+        mHeaderViews.add(view);
+    }
+
+    public void addHeaderView(View view, Object data, boolean isSelectable){
+        mExpandableListView.addHeaderView(view,data,isSelectable);
+        mHeaderViews.add(view);
     }
 
     public int getFooterViewsCount() {
@@ -99,8 +109,11 @@ public class RefreshableExpandableListView extends RefreshableBase<ExpandableLis
         return mExpandableListView.getLastVisiblePosition() == mExpandableListView.getCount() - 1;
     }
 
-    @Override
     protected boolean isContentViewAtTop() {
-        return mExpandableListView.getFirstVisiblePosition() == 0;
+        if(mHeaderViews == null || mHeaderViews.size() == 0){
+            return mExpandableListView.getFirstVisiblePosition() == 0;
+        }
+        View childAt = mExpandableListView.getChildAt(0);
+        return childAt == mHeaderViews.get(mHeaderViews.size()-1) && childAt.getTop() >= mExpandableListView.getPaddingTop();
     }
 }

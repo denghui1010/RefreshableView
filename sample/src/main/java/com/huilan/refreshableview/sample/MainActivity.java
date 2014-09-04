@@ -25,6 +25,11 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    public void imagepager(View view) {
+        Intent intent = new Intent(this, ImagePagerActivity.class);
+        startActivity(intent);
+    }
+
     public void pull_refresh(View view) {
         Intent intent = new Intent(this, Pull2RefreshActivity.class);
         startActivity(intent);
