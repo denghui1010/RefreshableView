@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="def_textcolor_d">#ff585858</color>
+    <color name="def_subtextcolor_d">#ff868686</color>
+    <color name="def_background_l">#fff0f0f0</color>
+</resources>

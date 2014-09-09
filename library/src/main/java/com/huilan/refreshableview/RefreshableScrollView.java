@@ -24,8 +24,9 @@ public class RefreshableScrollView extends RefreshableBase<ScrollView> {
     }
 
     @Override
-    protected ScrollView createContentView() {
-        mScrollView = new ScrollView(getContext());
+    protected ScrollView createContentView(AttributeSet attrs) {
+        mScrollView = new ScrollView(getContext(), attrs);
+        mScrollView.setId(R.id.refreshablescrollview);
         return mScrollView;
     }
 
@@ -38,4 +39,10 @@ public class RefreshableScrollView extends RefreshableBase<ScrollView> {
     protected boolean isContentViewAtTop() {
         return mScrollView.getScrollY() == 0;
     }
+
+    @Override
+    protected Orientation getRefreshableViewScrollDirection() {
+        return Orientation.VERTICAL;
+    }
+
 }

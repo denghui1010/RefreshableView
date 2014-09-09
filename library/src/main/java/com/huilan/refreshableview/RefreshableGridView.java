@@ -26,8 +26,9 @@ public class RefreshableGridView extends RefreshableBase<GridView> {
     }
 
     @Override
-    protected GridView createContentView() {
-        mGridView = new GridView(getContext());
+    protected GridView createContentView(AttributeSet attrs) {
+        mGridView = new GridView(getContext(), attrs);
+        mGridView.setId(R.id.refreshablegridview);
         return mGridView;
     }
 
@@ -39,6 +40,11 @@ public class RefreshableGridView extends RefreshableBase<GridView> {
     @Override
     protected boolean isContentViewAtTop() {
         return false;
+    }
+
+    @Override
+    protected Orientation getRefreshableViewScrollDirection() {
+        return Orientation.VERTICAL;
     }
 
     public void setEmptyView(final View emptyView){
@@ -54,4 +60,5 @@ public class RefreshableGridView extends RefreshableBase<GridView> {
             }
         });
     }
+
 }

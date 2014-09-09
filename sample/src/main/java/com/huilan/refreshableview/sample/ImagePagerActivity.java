@@ -2,6 +2,7 @@ package com.huilan.refreshableview.sample;
 
 import com.huilan.imagepager.ImagePager;
 import com.huilan.refreshableview.NotifyListener;
+import com.huilan.refreshableview.OnHeaderRefreshListener;
 import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
 import com.lidroid.xutils.BitmapUtils;
@@ -18,13 +19,29 @@ import java.util.ArrayList;
 /**
  * Created by liudenghui on 14-9-3.
  */
-public class ImagePagerActivity extends Activity {
+public class ImagePagerActivity extends Activity implements OnHeaderRefreshListener {
 
     private ImagePager mImagePager;
     private RefreshableListView mListView;
     private ArrayList<String> mList;
     private ArrayList<String> mTitles;
     private int count;
+
+    @Override
+    public void onHeaderRefresh() {
+        mListView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mListView.notifyHeaderRefreshFinished(RefreshResult.hasmore, new NotifyListener() {
+                    @Override
+                    public void notifyDataSetChanged() {
+//                listViewAdapter.notifyDataSetChanged();
+//                mImagePager.notifyDataSetChanged();
+                    }
+                });
+            }
+        },2000);
+    }
 
     public void update(View view) {
         mList.add("http://192.168.0.184:2012/eportal/fileDir/yxw/resource/cms/2014/08/2014081916203359718_small.jpg");

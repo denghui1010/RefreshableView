@@ -4,16 +4,18 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.huilan.refreshableview.CustomView;
+import com.huilan.refreshableview.ICustomView;
 import com.huilan.refreshableview.R;
 import com.huilan.refreshableview.RefreshResult;
 
 /**
  * Created by liudenghui on 14-8-8.
  */
-public class AutoLoadFooterView extends CustomView {
+public class AutoLoadFooterViewI extends CustomView {
 
     private ProgressBar footer_progressbar;
     private ImageView footer_image;
@@ -21,17 +23,17 @@ public class AutoLoadFooterView extends CustomView {
     private TextView footer_text_2;
 
 
-    public AutoLoadFooterView(Context context) {
+    public AutoLoadFooterViewI(Context context) {
         super(context);
         init();
     }
 
-    public AutoLoadFooterView(Context context, AttributeSet attrs) {
+    public AutoLoadFooterViewI(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public AutoLoadFooterView(Context context, AttributeSet attrs, int defStyle) {
+    public AutoLoadFooterViewI(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
@@ -65,7 +67,7 @@ public class AutoLoadFooterView extends CustomView {
     }
 
     @Override
-    protected void refreshFinished(RefreshResult result) {
+    public void refreshFinished(RefreshResult result) {
         switch (result){
             case hasmore:
                 originSate();

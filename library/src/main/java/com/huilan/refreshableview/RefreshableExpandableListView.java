@@ -98,8 +98,9 @@ public class RefreshableExpandableListView extends RefreshableBase<ExpandableLis
     }
 
     @Override
-    protected ExpandableListView createContentView() {
-        mExpandableListView = new ExpandableListView(getContext());
+    protected ExpandableListView createContentView(AttributeSet attrs) {
+        mExpandableListView = new ExpandableListView(getContext(), attrs);
+        mExpandableListView.setId(R.id.refreshableexpandlistview);
         mExpandableListView.setOnScrollListener(this);
         return mExpandableListView;
     }
@@ -114,6 +115,16 @@ public class RefreshableExpandableListView extends RefreshableBase<ExpandableLis
             return mExpandableListView.getFirstVisiblePosition() == 0;
         }
         View childAt = mExpandableListView.getChildAt(0);
-        return childAt == mHeaderViews.get(mHeaderViews.size()-1) && childAt.getTop() >= mExpandableListView.getPaddingTop();
+//        System.out.println("top"+childAt.getTop() +"padt"+getPaddingTop() + mListView.getPaddingTop());
+        if(subHeaderView!=null) {
+            return childAt == subHeaderView.getParent() && childAt.getTop() >= mExpandableListView.getPaddingTop();
+        } else {
+            return childAt == mHeaderViews.get(mHeaderViews.size() - 1) && childAt.getTop() >= mExpandableListView.getPaddingTop();
+        }
+    }
+
+    @Override
+    protected Orientation getRefreshableViewScrollDirection() {
+        return Orientation.VERTICAL;
     }
 }

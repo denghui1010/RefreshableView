@@ -3,10 +3,14 @@ package com.huilan.refreshableview;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -20,6 +24,9 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
     private ListView mListView;
     private List<View> mHeaderViews = new ArrayList<View>();
 
+    private CustomView mHeaderLoadingView;
+    private CustomView mFooterLoadingView;
+
     public RefreshableListView(Context context) {
         super(context);
         init();
@@ -27,10 +34,6 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
 
     public RefreshableListView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        int divider = attrs.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "divider", 0x0);
-        if (divider != 0x0) {
-            mListView.setDivider(getResources().getDrawable(divider));
-        }
         init();
     }
 
@@ -79,18 +82,31 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
         mListView.setDivider(divider);
     }
 
-    public void setEmptyView(final View emptyView) {
-        addView(emptyView);
-        mListView.setEmptyView(emptyView);
-        post(new Runnable() {
-            @Override
-            public void run() {
-                ViewGroup.LayoutParams layoutParams = emptyView.getLayoutParams();
-                layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                layoutParams.height = getMeasuredHeight();
-                emptyView.setLayoutParams(layoutParams);
+    public void setEmptyView(View emptyView) {
+        FrameLayout contentWrapper = getContentWrapper();
+        if (null != emptyView) {
+            emptyView.setClickable(true);
+            ViewParent emptyViewParent = emptyView.getParent();
+            if (null != emptyViewParent && emptyViewParent instanceof ViewGroup) {
+                ((ViewGroup) emptyViewParent).removeView(emptyView);
             }
-        });
+            FrameLayout.LayoutParams newLp = null;
+            ViewGroup.LayoutParams lp = emptyView.getLayoutParams();
+            if (null != lp) {
+                newLp = new FrameLayout.LayoutParams(lp);
+                if (lp instanceof LinearLayout.LayoutParams) {
+                    newLp.gravity = ((LinearLayout.LayoutParams) lp).gravity;
+                } else {
+                    newLp.gravity = Gravity.CENTER;
+                }
+            }
+            if (null != newLp) {
+                contentWrapper.addView(emptyView, lp);
+            } else {
+                contentWrapper.addView(emptyView);
+            }
+        }
+        mListView.setEmptyView(emptyView);
     }
 
     public void setOnItemClickListener(AdapterView.OnItemClickListener listener) {
@@ -98,9 +114,15 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
     }
 
     @Override
-    protected ListView createContentView() {
-        mListView = new ListView(getContext());
+    protected ListView createContentView(AttributeSet attrs) {
+        mListView = new ListView(getContext(), attrs);
+        mListView.setId(R.id.refreshablelistview);
         return mListView;
+    }
+
+    @Override
+    protected Orientation getRefreshableViewScrollDirection() {
+        return Orientation.VERTICAL;
     }
 
     protected boolean isContentViewAtBottom() {
@@ -113,18 +135,20 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
         }
         View childAt = mListView.getChildAt(0);
 //        System.out.println("top"+childAt.getTop() +"padt"+getPaddingTop() + mListView.getPaddingTop());
-        return childAt == mHeaderViews.get(mHeaderViews.size() - 1) && childAt.getTop() >= mListView .getPaddingTop();
+        if (subHeaderView != null) {
+            return childAt == subHeaderView.getParent() && childAt.getTop() >= mListView.getPaddingTop();
+        } else {
+            return childAt == mHeaderViews.get(mHeaderViews.size() - 1) && childAt.getTop() >= mListView
+                    .getPaddingTop();
+        }
     }
 
     private void init() {
+        mListView.setHeaderDividersEnabled(false);
+        mListView.setFooterDividersEnabled(false);
         mListView.setOnScrollListener(this);
-        mListView.setOverScrollMode(OVER_SCROLL_NEVER);
-        mListView.setHeaderDividersEnabled(true);
-        mListView.setFooterDividersEnabled(true);
-        mListView.setPadding(getResources().getDimensionPixelSize(R.dimen.default_paddingleft),
-                             getResources().getDimensionPixelOffset(R.dimen.default_paddingtop),
+        mListView.setPadding(getResources().getDimensionPixelSize(R.dimen.default_paddingleft), 0,
                              getResources().getDimensionPixelOffset(R.dimen.default_paddingright), 0);
-        mListView.setScrollBarStyle(SCROLLBARS_OUTSIDE_OVERLAY);
     }
 
 }

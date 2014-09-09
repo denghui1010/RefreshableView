@@ -1,18 +1,22 @@
 package com.huilan.refreshableview;
 
-import com.huilan.refreshableview.footerview.AutoLoadFooterView;
-import com.huilan.refreshableview.footerview.Click2LoadFooterView;
-import com.huilan.refreshableview.headerview.Pull2RefreshHeaderView;
+import com.huilan.refreshableview.footerview.AutoLoadFooterViewI;
+import com.huilan.refreshableview.footerview.Click2LoadFooterViewI;
+import com.huilan.refreshableview.headerview.Pull2RefreshHeaderViewI;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.os.Build;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AbsListView;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Scroller;
@@ -20,15 +24,16 @@ import android.widget.Scroller;
 /**
  * Created by liudenghui on 14-7-29.
  */
-public abstract class RefreshableBase<T extends View> extends LinearLayout {
+public abstract class RefreshableBase<T extends View> extends LinearLayout{
 
-    public final int scrollDurationFactor = 4;
+    public final int scrollDurationFactor = 2;
 
     protected CustomView headerView;
+    protected CustomView subHeaderView;
     protected CustomView footerView;
 
-    protected AbsListView.LayoutParams headerLayoutParams;
-    protected AbsListView.LayoutParams footerLayoutParams;
+    protected ViewGroup.LayoutParams headerLayoutParams;
+    protected ViewGroup.LayoutParams footerLayoutParams;
 
     protected OnHeaderRefreshListener onHeaderRefreshListener;
     protected OnFooterRefreshListener onFooterRefreshListener;
@@ -41,30 +46,34 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
     protected int headerHeight;
     protected int footerHeight;
+    private int dividerHeight;
     private int startX;
     private int startY;
     private T contentView;
     private boolean requireInterupt;
     private int canRefreshDis;
-    private Handler mHandler = new Handler();
 
     private Scroller scroller;
-    private OnSmoothScrollListener mListener;
+    private int mTouchSlop;
+
+    private SmoothScrollRunnable mCurrentSmoothScrollRunnable;
+    private Interpolator mScrollAnimationInterpolator;//滚动动画插入器
+    private FrameLayout mContentWrapper;
 
     public RefreshableBase(Context context) {
         super(context);
-        init();
+        init(null);
     }
 
     public RefreshableBase(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(attrs);
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public RefreshableBase(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init();
+        init(attrs);
     }
 
     @Override
@@ -174,6 +183,9 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      */
     public void notifyHeaderRefreshFinished(final RefreshResult result, final int millis, final NotifyListener listener) {
         headerView.refreshFinished(result);
+        if(subHeaderView!=null){
+            subHeaderView.refreshFinished(result);
+        }
         if (listener != null && result != RefreshResult.failure) {
             listener.notifyDataSetChanged();
         }
@@ -181,7 +193,11 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         postDelayed(new Runnable() {
             public void run() {
                 if (getScrollY() <= 0) {
-                    smoothScrollTo(0, headerHeight, mListener);
+                    if(subHeaderView!=null){
+                        headerView.setVisibility(VISIBLE);
+                        subHeaderView.setVisibility(GONE);
+                    }
+                    smoothScrollTo(headerHeight);
                 }
             }
         }, millis);
@@ -189,8 +205,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         postDelayed(new Runnable() {
             @Override
             public void run() {
-                headerRefreshState = RefreshState.ORIGIN_STATE;
-                headerView.originSate();
+                setHeaderState(RefreshState.ORIGIN_STATE);
             }
         }, millis + scrollDurationFactor * Math.abs(headerHeight - getScrollY()));
     }
@@ -208,20 +223,18 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param millis 延迟毫秒值
      */
     public void notifyHeaderRefreshStarted(int millis) {
-        headerRefreshState = RefreshState.ORIGIN_STATE;
-        headerView.originSate();
+        setHeaderState(RefreshState.ORIGIN_STATE);
         if (getScrollY() <= 0) {
             scrollTo(0, headerHeight);
         }
         postDelayed(new Runnable() {
             public void run() {
-                headerRefreshState = RefreshState.REFRESHING;
-                headerView.refreshing();
-                smoothScrollTo(0, 0, null);
+                setHeaderState(RefreshState.REFRESHING);
+                smoothScrollTo(0);
             }
         }, millis);
         //延时到滑动进行完毕才进行真正的刷新回调
-        mHandler.postDelayed(new Runnable() {
+        postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (onHeaderRefreshListener != null) {
@@ -257,7 +270,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * 设置开启上拉刷新,刷新view使用默认宽高度,默认上拉模式 FooterRefreshMode.AUTO
      */
     public void setFooterEnable() {
-        footerLayoutParams = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, getResources()
+        footerLayoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getResources()
                 .getDimensionPixelSize(R.dimen.default_footer_height));
         setFooterEnable(footerLayoutParams, FooterRefreshMode.AUTO);
     }
@@ -268,7 +281,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param footerRefreshMode footer刷新模式
      */
     public void setFooterEnable(FooterRefreshMode footerRefreshMode) {
-        footerLayoutParams = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, getResources()
+        footerLayoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getResources()
                 .getDimensionPixelSize(R.dimen.default_footer_height));
         setFooterEnable(footerLayoutParams, footerRefreshMode);
     }
@@ -278,7 +291,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      *
      * @param layoutParams 上拉view的layoutparams
      */
-    public void setFooterEnable(AbsListView.LayoutParams layoutParams) {
+    public void setFooterEnable(ViewGroup.LayoutParams layoutParams) {
         setFooterEnable(layoutParams, FooterRefreshMode.AUTO);
     }
 
@@ -288,7 +301,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param layoutParams      上拉view的layoutparams
      * @param footerRefreshMode 刷新模式,FooterRefreshMode
      */
-    public void setFooterEnable(AbsListView.LayoutParams layoutParams, FooterRefreshMode footerRefreshMode) {
+    public void setFooterEnable(ViewGroup.LayoutParams layoutParams, FooterRefreshMode footerRefreshMode) {
         footerView = getFooterView(footerRefreshMode);
         footerView.setOnClickListener(new OnClickListener() {
             @Override
@@ -302,12 +315,14 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         footerLayoutParams = layoutParams;
         footerView.setLayoutParams(footerLayoutParams);
         if (contentView instanceof ListView) {
+            FrameLayout frame = new FrameLayout(getContext());
+            frame.addView(footerView);
             if (footerRefreshMode == FooterRefreshMode.AUTO) {
-                ((ListView) contentView).addFooterView(footerView, null, false);
                 footerView.setClickable(false);
                 footerView.setFocusable(false);
+                ((ListView)contentView).addFooterView(frame, null, false);
             } else {
-                ((ListView) contentView).addFooterView(footerView);
+                ((ListView) contentView).addFooterView(frame);
             }
         } else {
             addView(footerView);
@@ -319,7 +334,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * 设置开启下拉刷新,刷新view使用默认宽高度,默认下拉模式 HeaderRefreshMode.PULL
      */
     public void setHeaderEnable() {
-        headerLayoutParams = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, getResources()
+        headerLayoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getResources()
                 .getDimensionPixelSize(R.dimen.default_header_height));
         setHeaderEnable(headerLayoutParams, HeaderRefreshMode.PULL);
     }
@@ -330,7 +345,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param headerRefreshMode 刷新模式
      */
     public void setHeaderEnable(HeaderRefreshMode headerRefreshMode) {
-        headerLayoutParams = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, getResources()
+        headerLayoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getResources()
                 .getDimensionPixelSize(R.dimen.default_header_height));
         setHeaderEnable(headerLayoutParams, headerRefreshMode);
     }
@@ -340,7 +355,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      *
      * @param layoutParams 下拉view的layoutparams
      */
-    public void setHeaderEnable(AbsListView.LayoutParams layoutParams) {
+    public void setHeaderEnable(ViewGroup.LayoutParams layoutParams) {
         setHeaderEnable(layoutParams, HeaderRefreshMode.PULL);
     }
 
@@ -350,13 +365,22 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param layoutParams      下拉view的layoutparams
      * @param headerRefreshMode 刷新模式,见HeaderRfreshMode
      */
-    public void setHeaderEnable(AbsListView.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
+    public void setHeaderEnable(ViewGroup.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
         headerView = getHeaderView(headerRefreshMode);
         this.headerRefreshMode = headerRefreshMode;
         headerLayoutParams = layoutParams;
         headerView.setLayoutParams(layoutParams);
         addView(headerView, 0);
         headerView.originSate();
+        if(contentView instanceof ListView){
+            FrameLayout frame = new FrameLayout(getContext());
+            subHeaderView = getHeaderView(headerRefreshMode);
+            subHeaderView.setLayoutParams(layoutParams);
+            subHeaderView.originSate();
+            subHeaderView.setVisibility(GONE);
+            frame.addView(subHeaderView);
+            ((ListView)contentView).addHeaderView(frame,null,false);
+        }
     }
 
     /**
@@ -382,7 +406,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      *
      * @return view
      */
-    protected abstract T createContentView();
+    protected abstract T createContentView(AttributeSet attrs);
 
     /**
      * contentview是否滚动到底部
@@ -401,51 +425,60 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         if (headerView != null && headerHeight == 0) {
-            headerHeight = headerView.getMeasuredHeight();
+            headerHeight = headerView.getHeight();
             canRefreshDis = headerHeight;
             scrollTo(0, headerHeight);
         }
         if (footerView != null && footerHeight == 0) {
-            footerHeight = footerView.getMeasuredHeight();
+            footerHeight = footerView.getHeight();
         }
         super.onLayout(changed, l, t, r, b);
     }
 
     private CustomView getFooterView(FooterRefreshMode footerRefreshMode) {
         if (footerRefreshMode == FooterRefreshMode.AUTO) {
-            return new AutoLoadFooterView(getContext());
+            return new AutoLoadFooterViewI(getContext());
         } else if (footerRefreshMode == FooterRefreshMode.CLICK) {
-            return new Click2LoadFooterView(getContext());
+            return new Click2LoadFooterViewI(getContext());
         } else if (footerRefreshMode == FooterRefreshMode.PULL) {
             //todo pull
             return null;
         }
-        return new AutoLoadFooterView(getContext());
+        return new AutoLoadFooterViewI(getContext());
     }
 
     private CustomView getHeaderView(HeaderRefreshMode headerRefreshMode) {
         if (headerRefreshMode == HeaderRefreshMode.PULL) {
-            return new Pull2RefreshHeaderView(getContext());
+            return new Pull2RefreshHeaderViewI(getContext());
         }
-        return new Pull2RefreshHeaderView(getContext());
+        return new Pull2RefreshHeaderViewI(getContext());
     }
 
-    private void init() {
+    private void init(AttributeSet attrs) {
+        ViewConfiguration config = ViewConfiguration.get(getContext());
+        mTouchSlop = config.getScaledTouchSlop();
         scroller = new Scroller(getContext());
         setOrientation(VERTICAL);
-        contentView = createContentView();
+        mContentWrapper = new FrameLayout(getContext());
+        mContentWrapper.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
+        contentView = createContentView(attrs);
+        addView(mContentWrapper);
         if (contentView != null) {
-            addView(contentView);
+            mContentWrapper.addView(contentView);
             post(new Runnable() {
                 @Override
                 public void run() {
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT, getMeasuredHeight());
-                    contentView.setLayoutParams(layoutParams);
+                    mContentWrapper.setLayoutParams(new LinearLayout.LayoutParams(-1, getMeasuredHeight()));
                 }
             });
         }
     }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+    }
+
 
     private boolean onInterceptWhenFooterRefreshEnable(MotionEvent event) {
         return false;
@@ -467,15 +500,19 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
                 int currX = (int) event.getRawX();
                 int dX = currX - startX;
                 int dY = currY - startY;
-                if (isContentViewAtTop() && dY > 20) {
+                if(headerRefreshState == RefreshState.REFRESHING){
+                    return false;
+                }
+                if (isContentViewAtTop() && dY > 0) {
                     requireInterupt = true;
                 }
-                if (headerRefreshState == RefreshState.REFRESHING && (getScrollY()+dY<0)) {
-                    requireInterupt = true;
-                }
-                if (dX > 20) {
-                    requireInterupt = false;
-                }
+//                if (headerRefreshState == RefreshState.REFRESHING && (getScrollY()+dY<0)) {
+//                    requireInterupt = true;
+//                }
+//                System.out.println("slop="+mTouchSlop+",dx="+dX);
+//                if (dX > 0) {
+//                    requireInterupt = false;
+//                }
                 break;
         }
         return requireInterupt;
@@ -516,51 +553,212 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
                     }
                 }
                 if (getScrollY() > headerHeight - canRefreshDis && headerRefreshState == RefreshState.CAN_REFRESH) {
-                    headerRefreshState = RefreshState.ORIGIN_STATE;
-                    headerView.originSate();
+                    setHeaderState(RefreshState.ORIGIN_STATE);
                 } else if (getScrollY() < headerHeight - canRefreshDis
                         && headerRefreshState == RefreshState.ORIGIN_STATE) {
-                    headerRefreshState = RefreshState.CAN_REFRESH;
-                    headerView.canRefresh();
+                    setHeaderState(RefreshState.CAN_REFRESH);
                 }
                 startY = currY;
                 break;
             case MotionEvent.ACTION_UP:
                 if (headerRefreshState == RefreshState.CAN_REFRESH) {
-                    headerRefreshState = RefreshState.REFRESHING;
-                    headerView.refreshing();
+                    setHeaderState(RefreshState.REFRESHING);
                     if(onHeaderRefreshListener != null) {
                         onHeaderRefreshListener.onHeaderRefresh();
                     }
-                    smoothScrollTo(0, 0, null);
-
+                    smoothScrollTo(0);
                 } else if(headerRefreshState != RefreshState.REFRESHING){
-                    smoothScrollTo(0, headerHeight, null);
+                    smoothScrollTo(headerHeight);
                 }
         }
         return true;
     }
 
-    private void smoothScrollBy(int dx, int dy, OnSmoothScrollListener listener) {
-        if (!scroller.isFinished()) {
-            scroller.abortAnimation();
+    private void setHeaderState(RefreshState state){
+        switch (state){
+            case CAN_REFRESH:
+                headerView.canRefresh();
+                if(subHeaderView!=null){
+                    subHeaderView.canRefresh();
+                }
+                break;
+            case ORIGIN_STATE:
+                headerView.originSate();
+                if(subHeaderView!=null){
+                    subHeaderView.originSate();
+                }
+                break;
+            case REFRESHING:
+                headerView.refreshing();
+                if(subHeaderView!=null){
+                    headerView.setVisibility(GONE);
+                    subHeaderView.refreshing();
+                    subHeaderView.setVisibility(VISIBLE);
+                }
+                break;
         }
-        scroller.startScroll(getScrollX(), getScrollY(), dx, dy, scrollDurationFactor * Math.abs(dy));
-        if (listener != null) {
-            listener.onSmoothScrollStart();
-        }
-        postInvalidate();
+        headerRefreshState = state;
     }
 
-    private void smoothScrollTo(int x, int y, OnSmoothScrollListener listener) {
-        smoothScrollBy(x - getScrollX(), y - getScrollY(), listener);
-
+//    private void smoothScrollBy(int dx, int dy, OnSmoothScrollListener listener) {
+//        if (!scroller.isFinished()) {
+//            scroller.abortAnimation();
+//        }
+//        scroller.startScroll(getScrollX(), getScrollY(), dx, dy, scrollDurationFactor * Math.abs(dy));
+//        if (listener != null) {
+//            listener.onSmoothScrollStart();
+//        }
+//        postInvalidate();
+//    }
+//
+//    private void smoothScrollTo(int x, int y, OnSmoothScrollListener listener) {
+//        smoothScrollBy(x - getScrollX(), y - getScrollY(), listener);
+//
+//    }
+    private void smoothScrollTo(int value, int delayMillis, OnSmoothScrollFinishedListener listener){
+        switch (getRefreshableViewScrollDirection()) {
+            case HORIZONTAL:
+                smoothScrollTo(value, 0, Math.abs(value-getScrollX())*scrollDurationFactor, delayMillis, listener);
+                break;
+            case VERTICAL:
+            default:
+                smoothScrollTo(0, value, Math.abs(value - getScrollY()) * scrollDurationFactor, delayMillis, listener);
+                break;
+        }
     }
 
-    private interface OnSmoothScrollListener {
-        void onSmoothScrollFinish();
+    private void smoothScrollTo(int value, int delayMillis){
+        smoothScrollTo(value, delayMillis, null);
+    }
 
-        void onSmoothScrollStart();
+    private void smoothScrollTo(int value){
+        smoothScrollTo(value, 0);
+    }
+
+    private void smoothScrollTo(int x, int y, int duration, long delayMillis, OnSmoothScrollFinishedListener listener) {
+        if (null != mCurrentSmoothScrollRunnable) {
+            mCurrentSmoothScrollRunnable.stop();
+        }
+        if (getScrollX() != x || getScrollY() != y) {
+            if (null == mScrollAnimationInterpolator) {
+                // Default interpolator is a Decelerate Interpolator
+                mScrollAnimationInterpolator = new DecelerateInterpolator();
+            }
+            mCurrentSmoothScrollRunnable = new SmoothScrollRunnable(getScrollX(), getScrollY(), x, y, duration, listener);
+            if (delayMillis > 0) {
+                postDelayed(mCurrentSmoothScrollRunnable, delayMillis);
+            } else {
+                post(mCurrentSmoothScrollRunnable);
+            }
+        }
+    }
+
+    private void smoothScrollToAndBack(int y) {
+        smoothScrollTo(y, 0, new OnSmoothScrollFinishedListener() {
+            @Override
+            public void onSmoothScrollFinished() {
+                smoothScrollTo(0);
+            }
+        });
+    }
+
+    static interface OnSmoothScrollFinishedListener {
+        void onSmoothScrollFinished();
+    }
+
+    public static enum Orientation {
+        VERTICAL, HORIZONTAL;
+    }
+
+    protected abstract Orientation getRefreshableViewScrollDirection();
+
+    /**
+     * 平滑滚动,抄来的
+     */
+    private class SmoothScrollRunnable implements Runnable {
+        private final Interpolator mInterpolator;
+        private final int mStartX;
+        private final int mStartY;
+        private final int mStopX;
+        private final int mStopY;
+        private OnSmoothScrollFinishedListener mListener;
+        private int mDuration;
+        private boolean mContinueRunning = true;
+        private long mStartTime = -1;
+        private int mCurrentX = -1;
+        private int mCurrentY = -1;
+
+        public SmoothScrollRunnable(int startX, int startY, int stopX, int stopY, int duration, OnSmoothScrollFinishedListener listener) {
+            mStartX = startX;
+            mStartY = startY;
+            mStopX = stopX;
+            mStopY = stopY;
+            mDuration = duration;
+            mInterpolator = mScrollAnimationInterpolator;
+            mListener = listener;
+        }
+
+        @Override
+        public void run() {
+            /**
+             * Only set mStartTime if this is the first time we're starting,
+             * else actually calculate the Y delta
+             */
+            if (mStartTime == -1) {
+                mStartTime = System.currentTimeMillis();
+            } else {
+
+                /**
+                 * We do do all calculations in long to reduce software float
+                 * calculations. We use 1000 as it gives us good accuracy and
+                 * small rounding errors
+                 */
+                if(mDuration == 0){
+                    scrollTo(mStopX, mStopY);
+                    return;
+                }
+                long normalizedTime = (1000 * (System.currentTimeMillis() - mStartTime)) / mDuration;
+                normalizedTime = Math.max(Math.min(normalizedTime, 1000), 0);
+                int dX;
+                int dY;
+                if(mStartX - mStopX == 0){
+                    dX = 0;
+                } else {
+                    dX = Math.round((mStartX - mStopX) * mInterpolator.getInterpolation(normalizedTime / 1000f));
+                }
+                if(mStartY - mStopY == 0){
+                    dY = 0;
+                } else {
+                    dY = Math.round((mStartY - mStopY) * mInterpolator.getInterpolation(normalizedTime / 1000f));
+                }
+                mCurrentX = mStartX - dX;
+                mCurrentY = mStartY - dY;
+                scrollTo(mCurrentX, mCurrentY);
+            }
+
+            // If we're not at the target Y, keep going...
+            if (mContinueRunning && (mStopY != mCurrentY || mStopX != mCurrentX)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    postOnAnimation(this);
+                } else {
+                    postDelayed(this, 16);
+                }
+            } else {
+                scrollTo(mStopX, mStopY);
+                if (null != mListener) {
+                    mListener.onSmoothScrollFinished();
+                }
+            }
+        }
+
+        public void stop() {
+            mContinueRunning = false;
+            removeCallbacks(this);
+        }
+    }
+
+    public FrameLayout getContentWrapper(){
+        return mContentWrapper;
     }
 
 }
