@@ -14,16 +14,47 @@ android {
         minSdkVersion 9
         targetSdkVersion 19
         versionCode 1
-        versionName "0.7.4"
+        versionName "0.7.5-SNAPSHOT"
     }
 }
-
+/*
+ *生成javadoc 打包javadoc.jar 打包source.jar 上传所有
+ */
 uploadArchives {
     repositories.mavenDeployer {
-        repository(url: "http://54.179.166.198:8081/nexus/content/repositories/releases/") {
+        repository(url: "http://54.179.166.198:8081/nexus/content/repositories/snapshot/") {
             authentication(userName: "admin", password: "admin123")
             pom.groupId = android.defaultConfig.applicationId
             pom.version = android.defaultConfig.versionName
+            pom.artifactId = "refreshableview"
         }
+
     }
+}
+
+task generateJavadoc(type: Javadoc) {
+    title "Generates Javadoc for $uploadArchives.repositories.mavenDeployer.pom.artifactId $uploadArchives.repositories.mavenDeployer.pom.version API."
+    source = android.sourceSets.main.java.srcDirs
+    ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
+    ext.classpath = android.libraryVariants.collect { variant ->
+        variant.javaCompile.classpath.files
+    }
+    classpath = files(ext.classpath, ext.androidJar)
+    exclude '**/BuildConfig.java'
+    exclude '**/R.java'
+}
+
+task javadocJar(type: Jar, dependsOn: generateJavadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
 }

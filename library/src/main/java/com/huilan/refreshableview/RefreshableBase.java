@@ -150,6 +150,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
      *
      * @param result 刷新结果
      */
+    @Deprecated
     public void notifyHeaderRefreshFinished(RefreshResult result) {
         notifyHeaderRefreshFinished(result, 1000);
     }
