@@ -24,7 +24,6 @@
         <processorPath useClasspath="true" />
         <module name="extra-listfragment" />
         <module name="pulltorefresh" />
-        <module name="sample" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
