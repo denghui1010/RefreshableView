@@ -474,6 +474,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
     private void init(AttributeSet attrs) {
         ViewConfiguration config = ViewConfiguration.get(getContext());
         mTouchSlop = config.getScaledTouchSlop();
+        mGestureDetector = new GestureDetector(new YScrollDetector());
         scroller = new Scroller(getContext());
         setOrientation(VERTICAL);
         mContentWrapper = new FrameLayout(getContext());

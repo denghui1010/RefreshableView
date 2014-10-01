@@ -44,7 +44,7 @@ public class ImagePagerActivity extends Activity implements OnHeaderRefreshListe
     }
 
     public void update(View view) {
-        mList.add("http://192.168.0.184:2012/eportal/fileDir/yxw/resource/cms/2014/08/2014081916203359718_small.jpg");
+        mList.add("http://c.hiphotos.baidu.com/image/pic/item/b812c8fcc3cec3fd6efda57ed488d43f869427fd.jpg");
         mTitles.add("添加"+count++);
         mImagePager.notifyDataSetChanged();
     }
@@ -87,9 +87,9 @@ public class ImagePagerActivity extends Activity implements OnHeaderRefreshListe
 
     private void initData(){
         mList = new ArrayList<String>();
-        mList.add("http://192.168.0.184:2012/eportal/fileDir/yxw/resource/cms/2014/08/2014081916203359718_small.jpg");
-        mList.add("http://192.168.0.184:2012/eportal/fileDir/yxw/resource/cms/2014/08/2014081916244242817.jpg");
-        mList.add("http://192.168.0.184:2012/eportal/fileDir/yxw/resource/cms/2014/08/2014081916244242817.jpg");
+        mList.add("http://d.hiphotos.baidu.com/image/pic/item/29381f30e924b899aae35b396c061d950b7bf6d7.jpg");
+        mList.add("http://d.hiphotos.baidu.com/image/pic/item/cf1b9d16fdfaaf51687447b68e5494eef01f7a20.jpg");
+        mList.add("http://b.hiphotos.baidu.com/image/pic/item/b7fd5266d0160924425b6412d60735fae6cd34b9.jpg");
 
         mTitles = new ArrayList<String>();
         mTitles.add("这是标题0");
