@@ -24,6 +24,7 @@
         <activity android:name=".WebViewActivity" />
         <activity android:name=".ScrollViewActivity" />
         <activity android:name=".ImagePagerActivity" />
+        <activity android:name=".ViewPagerPull2RActivity" />
     </application>
 
 </manifest>

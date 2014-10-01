@@ -79,9 +79,8 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
                 }
             }
         }, 5000);
-        TextView textView = new TextView(getApplicationContext());
-        textView.setText("1111111111");
-        refreshlistview.setEmptyView(textView);
+
+        refreshlistview.setEmptyView(getLayoutInflater().inflate(R.layout.layout_loading, refreshlistview.getContentView(), false));
 //        refreshlistview.notifyHeaderRefreshStarted();
     }
 

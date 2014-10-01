@@ -40,6 +40,11 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    public void viewpager(View view) {
+        Intent intent = new Intent(this, ViewPagerPull2RActivity.class);
+        startActivity(intent);
+    }
+
     public void webview(View view) {
         Intent intent = new Intent(this, WebViewActivity.class);
         startActivity(intent);
