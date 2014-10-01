@@ -3,7 +3,9 @@ package com.huilan.refreshableview;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -115,7 +117,7 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
 
     @Override
     protected ListView createContentView(AttributeSet attrs) {
-        mListView = new ListView(getContext(), attrs);
+        mListView = new MyListView(getContext(), attrs);
         mListView.setId(R.id.refreshablelistview);
         return mListView;
     }
@@ -149,6 +151,37 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
         mListView.setOnScrollListener(this);
         mListView.setPadding(getResources().getDimensionPixelSize(R.dimen.default_paddingleft), 0,
                              getResources().getDimensionPixelOffset(R.dimen.default_paddingright), 0);
+    }
+
+    private class MyListView extends ListView {
+        private GestureDetector mGestureDetector;
+
+        public MyListView(Context context) {
+            super(context);
+            init();
+        }
+
+        public MyListView(Context context, AttributeSet attrs) {
+            super(context, attrs);
+            init();
+        }
+
+        private void init(){
+            mGestureDetector = new GestureDetector(new YScrollDetector());
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(MotionEvent ev) {
+            return super.onInterceptTouchEvent(ev) && mGestureDetector.onTouchEvent(ev);
+        }
+
+        private class YScrollDetector extends GestureDetector.SimpleOnGestureListener {
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2,
+                                    float distanceX, float distanceY) {
+                return Math.abs(distanceY) >= Math.abs(distanceX);
+            }
+        }
     }
 
 }

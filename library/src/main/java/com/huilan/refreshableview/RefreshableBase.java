@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -54,6 +55,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
 
     private Scroller scroller;
     private int mTouchSlop;
+    private GestureDetector mGestureDetector;
 
     private SmoothScrollRunnable mCurrentSmoothScrollRunnable;
     private Interpolator mScrollAnimationInterpolator;//滚动动画插入器
@@ -499,6 +501,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
         return false;
     }
 
+
     private boolean onInterceptWhenHeaderRefreshEnable(MotionEvent event) {
         if (headerRefreshMode == HeaderRefreshMode.CLOSE) {
             return super.onInterceptTouchEvent(event);
@@ -518,7 +521,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
                 if(headerRefreshState == RefreshState.REFRESHING){
                     return false;
                 }
-                if (isContentViewAtTop() && dY > 0) {
+                if (isContentViewAtTop() && dY > 0 && mGestureDetector.onTouchEvent(event)) {
                     requireInterupt = true;
                 }
 //                if (headerRefreshState == RefreshState.REFRESHING && (getScrollY()+dY<0)) {
@@ -531,6 +534,17 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
                 break;
         }
         return requireInterupt;
+    }
+
+    private class YScrollDetector extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            /**
+             * 如果我们滚动更接近水平方向,返回false
+             */
+            return (Math.abs(distanceY) > Math.abs(distanceX));
+        }
     }
 
     private void onTouchWhenFooterRefreshEnable(MotionEvent event) {
