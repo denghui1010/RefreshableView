@@ -25,9 +25,7 @@ import java.util.List;
 public class RefreshableListView extends RefreshableBase<ListView> implements ListView.OnScrollListener {
     private ListView mListView;
     private List<View> mHeaderViews = new ArrayList<View>();
-
-    private CustomView mHeaderLoadingView;
-    private CustomView mFooterLoadingView;
+    private boolean mFooterVisible = true;
 
     public RefreshableListView(Context context) {
         super(context);
@@ -63,11 +61,28 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+        System.out.println("visibleItemCount" + visibleItemCount + ",totalItemCount" + (totalItemCount - getHeaderViewsCount())+",last"+(firstVisibleItem+visibleItemCount));
+        CustomView footerView = getFooterView();
+        View childAt = mListView.getChildAt(mListView.getChildCount()-1);
+        if(footerView!=null) {
+                System.out.println("lastview" + footerView.getBottom() + "mlistview" + getBottom()+ ",listviewheight="+mListView.getHeight());
+                if (footerView.getTop() <= mListView.getBottom()) {
+//                mListView.removeFooterView(footerView);
+//                    footerWrapper.setVisibility(GONE);
+                    mFooterVisible = false;
+                } else {
+//                    footerView.setVisibility(VISIBLE);
+                    mFooterVisible = true;
+                }
+            } else {
+//                footerView.setVisibility(GONE);
+                mFooterVisible = false;
+            }
     }
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
-        if (mListView.getLastVisiblePosition() == mListView.getCount() - 1) {
+        if (scrollState == SCROLL_STATE_IDLE && mFooterVisible && mListView.getLastVisiblePosition() == mListView.getCount() - 1) {
             if (footerRefreshState == RefreshState.ORIGIN_STATE && footerRefreshMode == FooterRefreshMode.AUTO) {
                 footerRefreshState = RefreshState.REFRESHING;
                 footerView.refreshing();
@@ -119,7 +134,43 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
     protected ListView createContentView(AttributeSet attrs) {
         mListView = new MyListView(getContext(), attrs);
         mListView.setId(R.id.refreshablelistview);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                setFooterVisible();
+            }
+        });
         return mListView;
+    }
+
+    private void setFooterVisible(){
+        if (footerView != null && isContentViewAtTop()) {
+            if (mListView.getChildAt(mListView.getChildCount() - 1) == footerView) {
+                footerView.setVisibility(GONE);
+                mFooterVisible = false;
+            } else {
+                footerView.setVisibility(VISIBLE);
+                mFooterVisible = true;
+            }
+        }
+    }
+
+    @Override
+    public void notifyHeaderRefreshFinished(RefreshResult result, NotifyListener listener) {
+        super.notifyHeaderRefreshFinished(result, listener);
+        setFooterVisible();
+    }
+
+    @Override
+    public void notifyHeaderRefreshFinished(RefreshResult result, int millis, NotifyListener listener) {
+        super.notifyHeaderRefreshFinished(result, millis, listener);
+        setFooterVisible();
+    }
+
+    @Override
+    public void notifyHeaderRefreshFinished(RefreshResult result, int millis) {
+        super.notifyHeaderRefreshFinished(result, millis);
+        setFooterVisible();
     }
 
     @Override
@@ -164,6 +215,11 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
         public MyListView(Context context, AttributeSet attrs) {
             super(context, attrs);
             init();
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         }
 
         private void init(){
