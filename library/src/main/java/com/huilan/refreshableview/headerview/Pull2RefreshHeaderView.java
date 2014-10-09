@@ -17,7 +17,7 @@ import com.huilan.refreshableview.RefreshResult;
 /**
  * Created by liudenghui on 14-8-8.
  */
-public class Pull2RefreshHeaderViewI extends CustomView {
+public class Pull2RefreshHeaderView extends CustomView {
 
     private TextView header_text_1;
     private TextView header_text_2;
@@ -26,17 +26,17 @@ public class Pull2RefreshHeaderViewI extends CustomView {
     private RotateAnimation rotateAnimation0_180;
     private RotateAnimation rotateAnimation180_360;
 
-    public Pull2RefreshHeaderViewI(Context context) {
+    public Pull2RefreshHeaderView(Context context) {
         super(context);
         init();
     }
 
-    public Pull2RefreshHeaderViewI(Context context, AttributeSet attrs) {
+    public Pull2RefreshHeaderView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public Pull2RefreshHeaderViewI(Context context, AttributeSet attrs, int defStyle) {
+    public Pull2RefreshHeaderView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }

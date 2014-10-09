@@ -1,8 +1,11 @@
 package com.huilan.refreshableview;
 
-import com.huilan.refreshableview.footerview.AutoLoadFooterViewI;
-import com.huilan.refreshableview.footerview.Click2LoadFooterViewI;
-import com.huilan.refreshableview.headerview.Pull2RefreshHeaderViewI;
+import com.huilan.refreshableview.footerview.AutoLoadFooterView;
+import com.huilan.refreshableview.footerview.Click2LoadFooterView;
+import com.huilan.refreshableview.headerview.Pull2RefreshHeaderView;
+import com.huilan.refreshableview.smoothscroll.OnSmoothMoveFinishedListener;
+import com.huilan.refreshableview.smoothscroll.SmoothMoveRunnableBase;
+import com.huilan.refreshableview.smoothscroll.SmoothScrollRunnable;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -13,8 +16,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.Interpolator;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
@@ -31,7 +32,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     public final int scrollDurationFactor = 2;
 
     protected CustomView headerView;
-    protected CustomView subHeaderView;
     protected CustomView footerView;
     protected ViewGroup.LayoutParams headerLayoutParams;
     protected ViewGroup.LayoutParams footerLayoutParams;
@@ -43,16 +43,15 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     protected RefreshState footerRefreshState = RefreshState.ORIGIN_STATE;
     protected int headerHeight;
     protected int footerHeight;
-    private int startX;
-    private int startY;
-    private T contentView;
+    protected int startX;
+    protected int startY;
+    protected T contentView;
+    protected int canRefreshDis;
+    protected SmoothMoveRunnableBase mCurrentSmoothScrollRunnable;
     private boolean requireInterupt;
-    private int canRefreshDis;
     private Scroller scroller;
     private int mTouchSlop;
     private GestureDetector mGestureDetector;
-    private SmoothScrollRunnable mCurrentSmoothScrollRunnable;
-    private Interpolator mScrollAnimationInterpolator;//滚动动画插入器
     private FrameLayout mContentWrapper;
 
     public RefreshableBase(Context context) {
@@ -117,6 +116,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
     /**
      * 获取headerView,没有headerView的时候返回null
+     *
      * @return headerView
      */
     public CustomView getHeaderView() {
@@ -195,36 +195,27 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      */
     public void notifyHeaderRefreshFinished(final RefreshResult result, final int millis, final NotifyListener listener) {
         headerView.refreshFinished(result);
-        if (subHeaderView != null) {
-            subHeaderView.refreshFinished(result);
-        }
         if (listener != null && result != RefreshResult.failure) {
             listener.notifyDataSetChanged();
         }
         //延迟一定时间收起headerview
-        postDelayed(new Runnable() {
-            public void run() {
-                if (getScrollY() <= 0) {
-                    if (subHeaderView != null) {
-                        headerView.setVisibility(VISIBLE);
-                        subHeaderView.setVisibility(GONE);
-                    }
-                    if (isContentViewAtTop()) {
-                        smoothScrollTo(0);
-                        //滑动完毕后才还原状态
-                        postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                setHeaderState(RefreshState.ORIGIN_STATE);
-                            }
-                        }, scrollDurationFactor * Math.abs(headerHeight - getScrollY()));
-                    } else {
-                        scrollTo(0, 0);
-                        setHeaderState(RefreshState.ORIGIN_STATE);
-                    }
+        if (isContentViewAtTop()) {
+            postDelayed(new Runnable() {
+                public void run() {
+                    smoothScrollTo(0);
+                    //滑动完毕后才还原状态
+                    postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            setHeaderState(RefreshState.ORIGIN_STATE);
+                        }
+                    }, scrollDurationFactor * Math.abs(headerHeight - getScrollY()));
                 }
-            }
-        }, millis);
+            }, millis);
+        } else {
+            scrollTo(0, 0);
+            setHeaderState(RefreshState.ORIGIN_STATE);
+        }
     }
 
     /**
@@ -318,9 +309,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param footerRefreshMode 刷新模式,FooterRefreshMode
      */
     public void setFooterEnable(ViewGroup.LayoutParams layoutParams, FooterRefreshMode footerRefreshMode) {
-        MarginLayoutParams rootParams = (MarginLayoutParams) getLayoutParams();
-        rootParams.setMargins(rootParams.leftMargin, -layoutParams.height, rootParams.rightMargin, rootParams.bottomMargin);
-        setLayoutParams(rootParams);
         footerView = getFooterView(footerRefreshMode);
         footerView.setOnClickListener(new OnClickListener() {
             @Override
@@ -385,22 +373,13 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param headerRefreshMode 刷新模式,见HeaderRfreshMode
      */
     public void setHeaderEnable(ViewGroup.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
-        setPadding(0,-layoutParams.height,0,0);
+        setPadding(0, -layoutParams.height, 0, 0);
         headerView = getHeaderView(headerRefreshMode);
         this.headerRefreshMode = headerRefreshMode;
         headerLayoutParams = layoutParams;
         headerView.setLayoutParams(layoutParams);
         addView(headerView, 0);
         headerView.originSate();
-        if (contentView instanceof ListView) {
-            FrameLayout subHeaderWrapper = new FrameLayout(getContext());
-            subHeaderView = getHeaderView(headerRefreshMode);
-            subHeaderView.setLayoutParams(layoutParams);
-            subHeaderView.originSate();
-            subHeaderView.setVisibility(GONE);
-            subHeaderWrapper.addView(subHeaderView);
-            ((ListView) contentView).addHeaderView(subHeaderWrapper, null, false);
-        }
     }
 
     /**
@@ -440,6 +419,25 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      */
     protected abstract T createContentView(AttributeSet attrs);
 
+    protected CustomView getFooterView(FooterRefreshMode footerRefreshMode) {
+        if (footerRefreshMode == FooterRefreshMode.AUTO) {
+            return new AutoLoadFooterView(getContext());
+        } else if (footerRefreshMode == FooterRefreshMode.CLICK) {
+            return new Click2LoadFooterView(getContext());
+        } else if (footerRefreshMode == FooterRefreshMode.PULL) {
+            //todo pull
+            return null;
+        }
+        return new AutoLoadFooterView(getContext());
+    }
+
+    protected CustomView getHeaderView(HeaderRefreshMode headerRefreshMode) {
+        if (headerRefreshMode == HeaderRefreshMode.PULL) {
+            return new Pull2RefreshHeaderView(getContext());
+        }
+        return new Pull2RefreshHeaderView(getContext());
+    }
+
     protected abstract Orientation getRefreshableViewScrollDirection();
 
     /**
@@ -461,7 +459,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         if (headerView != null && headerHeight == 0) {
             headerHeight = headerView.getHeight();
             canRefreshDis = headerHeight;
-//            scrollTo(0, headerHeight);
         }
         if (footerView != null && footerHeight == 0) {
             footerHeight = footerView.getHeight();
@@ -469,23 +466,121 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         super.onLayout(changed, l, t, r, b);
     }
 
-    private CustomView getFooterView(FooterRefreshMode footerRefreshMode) {
-        if (footerRefreshMode == FooterRefreshMode.AUTO) {
-            return new AutoLoadFooterViewI(getContext());
-        } else if (footerRefreshMode == FooterRefreshMode.CLICK) {
-            return new Click2LoadFooterViewI(getContext());
-        } else if (footerRefreshMode == FooterRefreshMode.PULL) {
-            //todo pull
-            return null;
+    protected boolean onTouchWhenHeaderRefreshEnable(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                startY = (int) event.getRawY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                int currY = (int) event.getRawY();
+                int dY = currY - startY;
+                if (dY < 0 && -dY + getScrollY() > 0) {
+                    scrollTo(0, 0);
+                    return true;
+                }
+                if (headerRefreshState != RefreshState.REFRESHING) {
+                    scrollBy(0, -dY / 3);
+                } else {
+//                    if (getScrollY() + headerHeight - dY <= 0) {
+//                        scrollTo(0, headerHeight);
+//                    } else if (dY < 0) {
+                    scrollBy(0, -dY);
+//                    } else {
+//                        scrollBy(0, -dY / 3);
+//                    }
+                }
+                if (getScrollY() > -canRefreshDis && headerRefreshState == RefreshState.CAN_REFRESH) {
+                    setHeaderState(RefreshState.ORIGIN_STATE);
+                } else if (getScrollY() < -canRefreshDis && headerRefreshState == RefreshState.ORIGIN_STATE) {
+                    setHeaderState(RefreshState.CAN_REFRESH);
+                }
+                startY = currY;
+                break;
+            case MotionEvent.ACTION_UP:
+                if (headerRefreshState == RefreshState.CAN_REFRESH) {
+                    setHeaderState(RefreshState.REFRESHING);
+                    if (onHeaderRefreshListener != null) {
+                        onHeaderRefreshListener.onHeaderRefresh();
+                    }
+                    smoothScrollTo(-headerHeight);
+                } else if (headerRefreshState != RefreshState.REFRESHING) {
+                    smoothScrollTo(0);
+                }
         }
-        return new AutoLoadFooterViewI(getContext());
+        return true;
     }
 
-    private CustomView getHeaderView(HeaderRefreshMode headerRefreshMode) {
-        if (headerRefreshMode == HeaderRefreshMode.PULL) {
-            return new Pull2RefreshHeaderViewI(getContext());
+    protected void setHeaderState(RefreshState state) {
+        switch (state) {
+            case CAN_REFRESH:
+                headerView.canRefresh();
+                break;
+            case ORIGIN_STATE:
+                headerView.originSate();
+                break;
+            case REFRESHING:
+                headerView.refreshing();
+                break;
         }
-        return new Pull2RefreshHeaderViewI(getContext());
+        headerRefreshState = state;
+    }
+
+    //    private void smoothScrollBy(int dx, int dy, OnSmoothScrollListener listener) {
+//        if (!scroller.isFinished()) {
+//            scroller.abortAnimation();
+//        }
+//        scroller.startScroll(getScrollX(), getScrollY(), dx, dy, scrollDurationFactor * Math.abs(dy));
+//        if (listener != null) {
+//            listener.onSmoothScrollStart();
+//        }
+//        postInvalidate();
+//    }
+//
+//    private void smoothScrollTo(int x, int y, OnSmoothScrollListener listener) {
+//        smoothScrollBy(x - getScrollX(), y - getScrollY(), listener);
+//
+//    }
+    protected void smoothScrollTo(int value, int delayMillis, OnSmoothMoveFinishedListener listener) {
+        switch (getRefreshableViewScrollDirection()) {
+            case HORIZONTAL:
+                smoothScrollTo(value, 0, Math.abs(value - getScrollX()) * scrollDurationFactor, delayMillis, listener);
+                break;
+            case VERTICAL:
+            default:
+                smoothScrollTo(0, value, Math.abs(value - getScrollY()) * scrollDurationFactor, delayMillis, listener);
+                break;
+        }
+    }
+
+    protected void smoothScrollTo(int value, int delayMillis) {
+        smoothScrollTo(value, delayMillis, null);
+    }
+
+    protected void smoothScrollTo(int value) {
+        smoothScrollTo(value, 0);
+    }
+
+    protected void smoothScrollTo(int x, int y, int duration, long delayMillis, OnSmoothMoveFinishedListener listener) {
+        if (null != mCurrentSmoothScrollRunnable) {
+            mCurrentSmoothScrollRunnable.stop();
+        }
+        if (getScrollX() != x || getScrollY() != y) {
+            mCurrentSmoothScrollRunnable = new SmoothScrollRunnable(this, getScrollX(), getScrollY(), x, y, duration, listener);
+            if (delayMillis > 0) {
+                postDelayed(mCurrentSmoothScrollRunnable, delayMillis);
+            } else {
+                post(mCurrentSmoothScrollRunnable);
+            }
+        }
+    }
+
+    protected void smoothScrollToAndBack(int y) {
+        smoothScrollTo(y, 0, new OnSmoothMoveFinishedListener() {
+            @Override
+            public void onSmoothScrollFinished() {
+                smoothScrollTo(0);
+            }
+        });
     }
 
     private void init(AttributeSet attrs) {
@@ -552,233 +647,9 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         }
     }
 
-    private boolean onTouchWhenHeaderRefreshEnable(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                startY = (int) event.getRawY();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                int currY = (int) event.getRawY();
-                int dY = currY - startY;
-                if (dY < 0 && -dY + getScrollY() > 0) {
-                    scrollTo(0, 0);
-                    return true;
-                }
-                if (headerRefreshState != RefreshState.REFRESHING) {
-                    scrollBy(0, -dY / 3);
-                } else {
-//                    if (getScrollY() + headerHeight - dY <= 0) {
-//                        scrollTo(0, headerHeight);
-//                    } else if (dY < 0) {
-                        scrollBy(0, -dY);
-//                    } else {
-//                        scrollBy(0, -dY / 3);
-//                    }
-                }
-                if (getScrollY() > - canRefreshDis && headerRefreshState == RefreshState.CAN_REFRESH) {
-                    setHeaderState(RefreshState.ORIGIN_STATE);
-                } else if (getScrollY() < - canRefreshDis && headerRefreshState == RefreshState.ORIGIN_STATE) {
-                    setHeaderState(RefreshState.CAN_REFRESH);
-                }
-                startY = currY;
-                break;
-            case MotionEvent.ACTION_UP:
-                if (headerRefreshState == RefreshState.CAN_REFRESH) {
-                    setHeaderState(RefreshState.REFRESHING);
-                    if (onHeaderRefreshListener != null) {
-                        onHeaderRefreshListener.onHeaderRefresh();
-                    }
-//                    setPadding(0,0,0,0);
-//                    scrollTo(0,0);
-                    smoothScrollTo(-headerHeight);
-                } else if (headerRefreshState != RefreshState.REFRESHING) {
-                    smoothScrollTo(0);
-                }
-        }
-        return true;
-    }
-
-    private void setHeaderState(RefreshState state) {
-        switch (state) {
-            case CAN_REFRESH:
-                headerView.canRefresh();
-                if (subHeaderView != null) {
-                    subHeaderView.canRefresh();
-                }
-                break;
-            case ORIGIN_STATE:
-                headerView.originSate();
-                if (subHeaderView != null) {
-                    subHeaderView.originSate();
-                }
-                break;
-            case REFRESHING:
-                headerView.refreshing();
-                if (subHeaderView != null) {
-                    headerView.setVisibility(GONE);
-                    subHeaderView.refreshing();
-                    subHeaderView.setVisibility(VISIBLE);
-                }
-                break;
-        }
-        headerRefreshState = state;
-    }
-
-    //    private void smoothScrollBy(int dx, int dy, OnSmoothScrollListener listener) {
-//        if (!scroller.isFinished()) {
-//            scroller.abortAnimation();
-//        }
-//        scroller.startScroll(getScrollX(), getScrollY(), dx, dy, scrollDurationFactor * Math.abs(dy));
-//        if (listener != null) {
-//            listener.onSmoothScrollStart();
-//        }
-//        postInvalidate();
-//    }
-//
-//    private void smoothScrollTo(int x, int y, OnSmoothScrollListener listener) {
-//        smoothScrollBy(x - getScrollX(), y - getScrollY(), listener);
-//
-//    }
-    private void smoothScrollTo(int value, int delayMillis, OnSmoothScrollFinishedListener listener) {
-        switch (getRefreshableViewScrollDirection()) {
-            case HORIZONTAL:
-                smoothScrollTo(value, 0, Math.abs(value - getScrollX()) * scrollDurationFactor, delayMillis, listener);
-                break;
-            case VERTICAL:
-            default:
-                smoothScrollTo(0, value, Math.abs(value - getScrollY()) * scrollDurationFactor, delayMillis, listener);
-                break;
-        }
-    }
-
-    private void smoothScrollTo(int value, int delayMillis) {
-        smoothScrollTo(value, delayMillis, null);
-    }
-
-    private void smoothScrollTo(int value) {
-        smoothScrollTo(value, 0);
-    }
-
-    private void smoothScrollTo(int x, int y, int duration, long delayMillis, OnSmoothScrollFinishedListener listener) {
-        if (null != mCurrentSmoothScrollRunnable) {
-            mCurrentSmoothScrollRunnable.stop();
-        }
-        if (getScrollX() != x || getScrollY() != y) {
-            if (null == mScrollAnimationInterpolator) {
-                // Default interpolator is a Decelerate Interpolator
-                mScrollAnimationInterpolator = new DecelerateInterpolator();
-            }
-            mCurrentSmoothScrollRunnable = new SmoothScrollRunnable(getScrollX(), getScrollY(), x, y, duration, listener);
-            if (delayMillis > 0) {
-                postDelayed(mCurrentSmoothScrollRunnable, delayMillis);
-            } else {
-                post(mCurrentSmoothScrollRunnable);
-            }
-        }
-    }
-
-    private void smoothScrollToAndBack(int y) {
-        smoothScrollTo(y, 0, new OnSmoothScrollFinishedListener() {
-            @Override
-            public void onSmoothScrollFinished() {
-                smoothScrollTo(0);
-            }
-        });
-    }
-
     public static enum Orientation {
         VERTICAL,
         HORIZONTAL;
-    }
-
-    static interface OnSmoothScrollFinishedListener {
-        void onSmoothScrollFinished();
-    }
-
-    /**
-     * 平滑滚动,抄来的
-     */
-    private class SmoothScrollRunnable implements Runnable {
-        private final Interpolator mInterpolator;
-        private final int mStartX;
-        private final int mStartY;
-        private final int mStopX;
-        private final int mStopY;
-        private OnSmoothScrollFinishedListener mListener;
-        private int mDuration;
-        private boolean mContinueRunning = true;
-        private long mStartTime = -1;
-        private int mCurrentX = -1;
-        private int mCurrentY = -1;
-
-        public SmoothScrollRunnable(int startX, int startY, int stopX, int stopY, int duration,
-                                    OnSmoothScrollFinishedListener listener) {
-            mStartX = startX;
-            mStartY = startY;
-            mStopX = stopX;
-            mStopY = stopY;
-            mDuration = duration;
-            mInterpolator = mScrollAnimationInterpolator;
-            mListener = listener;
-        }
-
-        @Override
-        public void run() {
-            /**
-             * Only set mStartTime if this is the first time we're starting,
-             * else actually calculate the Y delta
-             */
-            if (mStartTime == -1) {
-                mStartTime = System.currentTimeMillis();
-            } else {
-
-                /**
-                 * We do do all calculations in long to reduce software float
-                 * calculations. We use 1000 as it gives us good accuracy and
-                 * small rounding errors
-                 */
-                if (mDuration == 0) {
-                    scrollTo(mStopX, mStopY);
-                    return;
-                }
-                long normalizedTime = (1000 * (System.currentTimeMillis() - mStartTime)) / mDuration;
-                normalizedTime = Math.max(Math.min(normalizedTime, 1000), 0);
-                int dX;
-                int dY;
-                if (mStartX - mStopX == 0) {
-                    dX = 0;
-                } else {
-                    dX = Math.round((mStartX - mStopX) * mInterpolator.getInterpolation(normalizedTime / 1000f));
-                }
-                if (mStartY - mStopY == 0) {
-                    dY = 0;
-                } else {
-                    dY = Math.round((mStartY - mStopY) * mInterpolator.getInterpolation(normalizedTime / 1000f));
-                }
-                mCurrentX = mStartX - dX;
-                mCurrentY = mStartY - dY;
-                scrollTo(mCurrentX, mCurrentY);
-            }
-
-            // If we're not at the target Y, keep going...
-            if (mContinueRunning && (mStopY != mCurrentY || mStopX != mCurrentX)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    postOnAnimation(this);
-                } else {
-                    postDelayed(this, 16);
-                }
-            } else {
-                scrollTo(mStopX, mStopY);
-                if (null != mListener) {
-                    mListener.onSmoothScrollFinished();
-                }
-            }
-        }
-
-        public void stop() {
-            mContinueRunning = false;
-            removeCallbacks(this);
-        }
     }
 
     private class YScrollDetector extends GestureDetector.SimpleOnGestureListener {

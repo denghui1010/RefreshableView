@@ -110,17 +110,18 @@ public class RefreshableExpandableListView extends RefreshableBase<ExpandableLis
         return mExpandableListView.getLastVisiblePosition() == mExpandableListView.getCount() - 1;
     }
 
+    @Override
     protected boolean isContentViewAtTop() {
-        if(mHeaderViews == null || mHeaderViews.size() == 0){
+//        if(mHeaderViews == null || mHeaderViews.size() == 0){
             return mExpandableListView.getFirstVisiblePosition() == 0;
-        }
-        View childAt = mExpandableListView.getChildAt(0);
+//        }
+//        View childAt = mExpandableListView.getChildAt(0);
 //        System.out.println("top"+childAt.getTop() +"padt"+getPaddingTop() + mListView.getPaddingTop());
-        if(subHeaderView!=null) {
-            return childAt == subHeaderView.getParent() && childAt.getTop() >= mExpandableListView.getPaddingTop();
-        } else {
-            return childAt == mHeaderViews.get(mHeaderViews.size() - 1) && childAt.getTop() >= mExpandableListView.getPaddingTop();
-        }
+//        if(subHeaderView!=null) {
+//            return childAt == headerView.getParent() && childAt.getTop() >= mExpandableListView.getPaddingTop();
+//        } else {
+//            return childAt == mHeaderViews.get(mHeaderViews.size() - 1) && childAt.getTop() >= mExpandableListView.getPaddingTop();
+//        }
     }
 
     @Override

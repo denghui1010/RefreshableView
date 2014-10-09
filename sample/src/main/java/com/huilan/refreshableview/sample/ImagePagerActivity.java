@@ -1,6 +1,7 @@
 package com.huilan.refreshableview.sample;
 
 import com.huilan.imagepager.ImagePager;
+import com.huilan.refreshableview.FooterRefreshMode;
 import com.huilan.refreshableview.NotifyListener;
 import com.huilan.refreshableview.OnHeaderRefreshListener;
 import com.huilan.refreshableview.RefreshResult;
@@ -73,6 +74,8 @@ public class ImagePagerActivity extends Activity implements OnHeaderRefreshListe
     private void initView() {
         mListView = (RefreshableListView) findViewById(R.id.test_listview);
         mListView.setHeaderEnable();
+        mListView.setFooterEnable(FooterRefreshMode.AUTO);
+
         BitmapUtils bitmapUtils = new BitmapUtils(this);
         mImagePager = new ImagePager(this);
         mImagePager.setBitmapUtil(bitmapUtils);
@@ -100,7 +103,7 @@ public class ImagePagerActivity extends Activity implements OnHeaderRefreshListe
     private class MyAdpter extends BaseAdapter {
         @Override
         public int getCount() {
-            return 10;
+            return 30;
         }
 
         @Override

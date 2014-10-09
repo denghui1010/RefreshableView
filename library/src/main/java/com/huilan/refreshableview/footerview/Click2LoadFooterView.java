@@ -15,7 +15,7 @@ import com.huilan.refreshableview.RefreshResult;
 /**
  * Created by liudenghui on 14-8-8.
  */
-public class Click2LoadFooterViewI extends CustomView {
+public class Click2LoadFooterView extends CustomView {
 
     private ProgressBar footer_progressbar;
     private ImageView footer_image;
@@ -23,17 +23,17 @@ public class Click2LoadFooterViewI extends CustomView {
     private TextView footer_text_2;
 
 
-    public Click2LoadFooterViewI(Context context) {
+    public Click2LoadFooterView(Context context) {
         super(context);
         init();
     }
 
-    public Click2LoadFooterViewI(Context context, AttributeSet attrs) {
+    public Click2LoadFooterView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public Click2LoadFooterViewI(Context context, AttributeSet attrs, int defStyle) {
+    public Click2LoadFooterView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
