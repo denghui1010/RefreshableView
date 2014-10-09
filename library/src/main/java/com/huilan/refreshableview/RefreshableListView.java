@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 下拉刷新listview
  * Created by liudenghui on 14-7-29.
  */
 public class RefreshableListView extends RefreshableBase<ListView> implements ListView.OnScrollListener {
@@ -178,10 +179,12 @@ public class RefreshableListView extends RefreshableBase<ListView> implements Li
         return Orientation.VERTICAL;
     }
 
+    @Override
     protected boolean isContentViewAtBottom() {
         return mListView.getLastVisiblePosition() == mListView.getCount() - 1;
     }
 
+    @Override
     protected boolean isContentViewAtTop() {
         if (mHeaderViews == null || mHeaderViews.size() == 0) {
             return mListView.getFirstVisiblePosition() == 0;

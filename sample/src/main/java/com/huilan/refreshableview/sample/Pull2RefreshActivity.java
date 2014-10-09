@@ -78,7 +78,7 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
                     myAdpter.notifyDataSetChanged();
                 }
             }
-        }, 5000);
+        }, 0);
 
         refreshlistview.setEmptyView(getLayoutInflater().inflate(R.layout.layout_loading, refreshlistview.getContentView(), false));
 //        refreshlistview.notifyHeaderRefreshStarted();

@@ -210,7 +210,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
                         subHeaderView.setVisibility(GONE);
                     }
                     if (isContentViewAtTop()) {
-                        smoothScrollTo(headerHeight);
+                        smoothScrollTo(0);
                         //滑动完毕后才还原状态
                         postDelayed(new Runnable() {
                             @Override
@@ -219,7 +219,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
                             }
                         }, scrollDurationFactor * Math.abs(headerHeight - getScrollY()));
                     } else {
-                        scrollTo(0, headerHeight);
+                        scrollTo(0, 0);
                         setHeaderState(RefreshState.ORIGIN_STATE);
                     }
                 }
@@ -385,9 +385,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param headerRefreshMode 刷新模式,见HeaderRfreshMode
      */
     public void setHeaderEnable(ViewGroup.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
-        MarginLayoutParams rootParams = (MarginLayoutParams) getLayoutParams();
-        rootParams.setMargins(rootParams.leftMargin, -layoutParams.height, rootParams.rightMargin, rootParams.bottomMargin);
-        setLayoutParams(rootParams);
+        setPadding(0,-layoutParams.height,0,0);
         headerView = getHeaderView(headerRefreshMode);
         this.headerRefreshMode = headerRefreshMode;
         headerLayoutParams = layoutParams;
@@ -562,24 +560,24 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
             case MotionEvent.ACTION_MOVE:
                 int currY = (int) event.getRawY();
                 int dY = currY - startY;
-                if (dY < 0 && -dY + getScrollY() > headerHeight) {
-                    scrollTo(0, headerHeight);
+                if (dY < 0 && -dY + getScrollY() > 0) {
+                    scrollTo(0, 0);
                     return true;
                 }
                 if (headerRefreshState != RefreshState.REFRESHING) {
                     scrollBy(0, -dY / 3);
                 } else {
-                    if (getScrollY() - dY <= 0) {
-                        scrollTo(0, 0);
-                    } else if (dY < 0) {
+//                    if (getScrollY() + headerHeight - dY <= 0) {
+//                        scrollTo(0, headerHeight);
+//                    } else if (dY < 0) {
                         scrollBy(0, -dY);
-                    } else {
-                        scrollBy(0, -dY / 3);
-                    }
+//                    } else {
+//                        scrollBy(0, -dY / 3);
+//                    }
                 }
-                if (getScrollY() > headerHeight - canRefreshDis && headerRefreshState == RefreshState.CAN_REFRESH) {
+                if (getScrollY() > - canRefreshDis && headerRefreshState == RefreshState.CAN_REFRESH) {
                     setHeaderState(RefreshState.ORIGIN_STATE);
-                } else if (getScrollY() < headerHeight - canRefreshDis && headerRefreshState == RefreshState.ORIGIN_STATE) {
+                } else if (getScrollY() < - canRefreshDis && headerRefreshState == RefreshState.ORIGIN_STATE) {
                     setHeaderState(RefreshState.CAN_REFRESH);
                 }
                 startY = currY;
@@ -590,9 +588,11 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
                     if (onHeaderRefreshListener != null) {
                         onHeaderRefreshListener.onHeaderRefresh();
                     }
-                    smoothScrollTo(0);
+//                    setPadding(0,0,0,0);
+//                    scrollTo(0,0);
+                    smoothScrollTo(-headerHeight);
                 } else if (headerRefreshState != RefreshState.REFRESHING) {
-                    smoothScrollTo(headerHeight);
+                    smoothScrollTo(0);
                 }
         }
         return true;
