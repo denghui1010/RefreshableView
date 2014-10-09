@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.BaseAdapter;
@@ -77,14 +78,14 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
         init(attrs);
     }
 
-    @Override
-    public void computeScroll() {
-        if (scroller.computeScrollOffset()) {
-            scrollTo(scroller.getCurrX(), scroller.getCurrY());
-            postInvalidate();
-        }
-        super.computeScroll();
-    }
+//    @Override
+//    public void computeScroll() {
+//        if (scroller.computeScrollOffset()) {
+//            scrollTo(scroller.getCurrX(), scroller.getCurrY());
+//            postInvalidate();
+//        }
+//        super.computeScroll();
+//    }
 
     /**
      * 获取中间区域
@@ -195,11 +196,11 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
         postDelayed(new Runnable() {
             public void run() {
                 if (getScrollY() <= 0) {
-                    if(subHeaderView!=null){
+                    if (subHeaderView != null) {
                         headerView.setVisibility(VISIBLE);
                         subHeaderView.setVisibility(GONE);
                     }
-                    if(isContentViewAtTop()) {
+                    if (isContentViewAtTop()) {
                         smoothScrollTo(headerHeight);
                         //滑动完毕后才还原状态
                         postDelayed(new Runnable() {
@@ -207,9 +208,9 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
                             public void run() {
                                 setHeaderState(RefreshState.ORIGIN_STATE);
                             }
-                        },scrollDurationFactor * Math.abs(headerHeight - getScrollY()));
+                        }, scrollDurationFactor * Math.abs(headerHeight - getScrollY()));
                     } else {
-                        scrollTo(0,headerHeight);
+                        scrollTo(0, headerHeight);
                         setHeaderState(RefreshState.ORIGIN_STATE);
                     }
                 }
@@ -225,7 +226,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
             mCurrentSmoothScrollRunnable.stop();
         }
         setHeaderState(RefreshState.ORIGIN_STATE);
-        scrollTo(0,headerHeight);
+        scrollTo(0, headerHeight);
     }
 
     /**
@@ -243,20 +244,20 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
     public void notifyHeaderRefreshStarted(int millis) {
         postDelayed(new Runnable() {
             public void run() {
-                if(!isContentViewAtTop() || getScrollY() != headerHeight) {
+                if (!isContentViewAtTop() || getScrollY() != headerHeight) {
                     return;
                 }
-                setHeaderState(RefreshState.REFRESHING);
                 smoothScrollTo(0);
                 //延时到滑动进行完毕才进行真正的刷新回调
                 postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        setHeaderState(RefreshState.REFRESHING);
                         if (onHeaderRefreshListener != null) {
                             onHeaderRefreshListener.onHeaderRefresh();
                         }
                     }
-                },scrollDurationFactor * Math.abs(0 - getScrollY()));
+                }, scrollDurationFactor * Math.abs(0 - getScrollY()));
             }
         }, millis);
     }
@@ -383,6 +384,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
      * @param headerRefreshMode 刷新模式,见HeaderRfreshMode
      */
     public void setHeaderEnable(ViewGroup.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
+        scrollBy(getScrollX(),layoutParams.height);
         headerView = getHeaderView(headerRefreshMode);
         this.headerRefreshMode = headerRefreshMode;
         headerLayoutParams = layoutParams;
@@ -444,7 +446,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
         if (headerView != null && headerHeight == 0) {
             headerHeight = headerView.getHeight();
             canRefreshDis = headerHeight;
-            scrollTo(0, headerHeight);
+//            scrollTo(0, headerHeight);
         }
         if (footerView != null && footerHeight == 0) {
             footerHeight = footerView.getHeight();
@@ -483,10 +485,11 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout{
         addView(mContentWrapper);
         if (contentView != null) {
             mContentWrapper.addView(contentView);
-            mContentWrapper.post(new Runnable() {
+            getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
-                public void run() {
+                public void onGlobalLayout() {
                     mContentWrapper.setLayoutParams(new LinearLayout.LayoutParams(-1, getHeight()));
+                    getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 }
             });
         }
