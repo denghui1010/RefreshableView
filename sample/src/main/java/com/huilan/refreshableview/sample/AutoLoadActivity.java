@@ -9,7 +9,9 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.huilan.refreshableview.FooterRefreshMode;
+import com.huilan.refreshableview.NotifyListener;
 import com.huilan.refreshableview.OnFooterRefreshListener;
+import com.huilan.refreshableview.OnHeaderRefreshListener;
 import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
 import com.huilan.refreshableview.RefreshableListViewBase;
@@ -17,7 +19,7 @@ import com.huilan.refreshableview.RefreshableListViewBase;
 import java.util.LinkedList;
 import java.util.Random;
 
-public class AutoLoadActivity extends Activity implements OnFooterRefreshListener {
+public class AutoLoadActivity extends Activity implements OnFooterRefreshListener,OnHeaderRefreshListener {
     private RefreshableListView refreshlistview;
 
     private LinkedList<String> list;
@@ -31,6 +33,7 @@ public class AutoLoadActivity extends Activity implements OnFooterRefreshListene
         initView();
         myAdpter = new MyAdpter();
         refreshlistview.setAdapter(myAdpter);
+        refreshlistview.setOnHeaderRefreshListener(this);
         refreshlistview.setOnFooterRefreshListener(this);
     }
 
@@ -43,6 +46,36 @@ public class AutoLoadActivity extends Activity implements OnFooterRefreshListene
         for (int i = 0; i < 10; ++i) {
             list.add("这是listview的数据" + i);
         }
+    }
+
+    @Override
+    public void onHeaderRefresh() {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                Random random = new Random();
+                int temp = random.nextInt(5) + 1;
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                for (int i = 0; i < 3; ++i, ++count) {
+                    list.addFirst("这是下拉刷新出来的数据" + count);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void result) {
+                refreshlistview.notifyHeaderRefreshFinished(RefreshResult.hasmore, new NotifyListener() {
+                    @Override
+                    public void notifyDataSetChanged() {
+                        myAdpter.notifyDataSetChanged();
+                    }
+                });
+            }
+        }.execute();
     }
 
     @Override

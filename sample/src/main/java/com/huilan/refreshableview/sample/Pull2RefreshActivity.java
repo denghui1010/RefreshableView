@@ -6,7 +6,6 @@ import com.huilan.refreshableview.OnFooterRefreshListener;
 import com.huilan.refreshableview.OnHeaderRefreshListener;
 import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
-import com.huilan.refreshableview.RefreshableListViewBase;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -22,12 +21,38 @@ import java.util.Random;
 /**
  * Created by liudenghui on 14-8-8.
  */
-public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshListener,OnFooterRefreshListener {
+public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshListener, OnFooterRefreshListener {
     private RefreshableListView refreshlistview;
 
     private LinkedList<String> list;
     private MyAdpter myAdpter;
     private int count = 0;
+
+    @Override
+    public void onFooterRefresh() {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                Random random = new Random();
+                int temp = random.nextInt(5) + 10;
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                for (int i = 0; i < temp; ++i, ++count) {
+                    list.add("这是加载更多出来的数据" + count);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void result) {
+                myAdpter.notifyDataSetChanged();
+                refreshlistview.notifyFooterRefreshFinished(RefreshResult.hasmore);
+            }
+        }.execute();
+    }
 
     @Override
     public void onHeaderRefresh() {
@@ -60,32 +85,6 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
     }
 
     @Override
-    public void onFooterRefresh() {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                Random random = new Random();
-                int temp = random.nextInt(5) + 10;
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                for (int i = 0; i < temp; ++i, ++count) {
-                    list.add("这是加载更多出来的数据" + count);
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyFooterRefreshFinished(RefreshResult.hasmore);
-            }
-        }.execute();
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_refreshable_listview);
@@ -99,20 +98,23 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
 
     private void initView() {
         refreshlistview = (RefreshableListView) findViewById(R.id.rl_list);
+        refreshlistview
+                .setEmptyView(getLayoutInflater().inflate(R.layout.layout_loading, refreshlistview, false));
+        refreshlistview.setAutoRemoveFooter(true);
         refreshlistview.setHeaderEnable();
-//        refreshlistview.setFooterEnable(FooterRefreshMode.AUTO);
+        refreshlistview.setFooterEnable(FooterRefreshMode.AUTO);
         list = new LinkedList<String>();
         refreshlistview.postDelayed(new Runnable() {
             @Override
             public void run() {
-                for (int i = 0; i < 30; ++i) {
+                for (int i = 0; i < 10; ++i) {
                     list.add("这是listview的数据" + i);
                     myAdpter.notifyDataSetChanged();
                 }
             }
         }, 0);
 
-        refreshlistview.setEmptyView(getLayoutInflater().inflate(R.layout.layout_loading, refreshlistview.getContentView(), false));
+
 //        refreshlistview.notifyHeaderRefreshStarted();
     }
 

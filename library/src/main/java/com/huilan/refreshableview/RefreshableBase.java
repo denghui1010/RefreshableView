@@ -16,12 +16,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
+import android.view.ViewTreeObserver;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.Scroller;
 
 /**
  * 下拉刷新基类
@@ -49,7 +47,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     protected int canRefreshDis;
     protected SmoothMoveRunnableBase mCurrentSmoothScrollRunnable;
     private boolean requireInterupt;
-    private Scroller scroller;
     private int mTouchSlop;
     private GestureDetector mGestureDetector;
     private FrameLayout mContentWrapper;
@@ -68,15 +65,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     public RefreshableBase(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs);
-    }
-
-    @Override
-    public void computeScroll() {
-        if (scroller.computeScrollOffset()) {
-            scrollTo(scroller.getCurrX(), scroller.getCurrY());
-            postInvalidate();
-        }
-        super.computeScroll();
     }
 
     /**
@@ -309,31 +297,12 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param footerRefreshMode 刷新模式,FooterRefreshMode
      */
     public void setFooterEnable(ViewGroup.LayoutParams layoutParams, FooterRefreshMode footerRefreshMode) {
+        footerHeight = layoutParams.height;
         footerView = getFooterView(footerRefreshMode);
-        footerView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                footerRefreshState = RefreshState.REFRESHING;
-                footerView.refreshing();
-                onFooterRefreshListener.onFooterRefresh();
-            }
-        });
         this.footerRefreshMode = footerRefreshMode;
-        if (contentView instanceof ListView) {
-            footerLayoutParams = new AbsListView.LayoutParams(layoutParams);
-            footerView.setLayoutParams(footerLayoutParams);
-            if (footerRefreshMode == FooterRefreshMode.AUTO) {
-                footerView.setClickable(false);
-                footerView.setFocusable(false);
-                ((ListView) contentView).addFooterView(footerView, null, false);
-            } else {
-                ((ListView) contentView).addFooterView(footerView);
-            }
-        } else {
-            footerView.setLayoutParams(footerLayoutParams);
-            footerLayoutParams = layoutParams;
-            addView(footerView);
-        }
+        footerView.setLayoutParams(footerLayoutParams);
+        footerLayoutParams = layoutParams;
+        addView(footerView);
         footerView.originSate();
     }
 
@@ -373,7 +342,9 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param headerRefreshMode 刷新模式,见HeaderRfreshMode
      */
     public void setHeaderEnable(ViewGroup.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
-        setPadding(0, -layoutParams.height, 0, 0);
+        headerHeight = layoutParams.height;
+        canRefreshDis = layoutParams.height;
+        setPadding(getPaddingLeft(), -layoutParams.height, getPaddingRight(), getPaddingBottom());
         headerView = getHeaderView(headerRefreshMode);
         this.headerRefreshMode = headerRefreshMode;
         headerLayoutParams = layoutParams;
@@ -438,6 +409,11 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         return new Pull2RefreshHeaderView(getContext());
     }
 
+    /**
+     * 获取该RefreshableView的滚动方向
+     *
+     * @return Orientation 方向
+     */
     protected abstract Orientation getRefreshableViewScrollDirection();
 
     /**
@@ -453,18 +429,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @return 是否
      */
     protected abstract boolean isContentViewAtTop();
-
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        if (headerView != null && headerHeight == 0) {
-            headerHeight = headerView.getHeight();
-            canRefreshDis = headerHeight;
-        }
-        if (footerView != null && footerHeight == 0) {
-            footerHeight = footerView.getHeight();
-        }
-        super.onLayout(changed, l, t, r, b);
-    }
 
     protected boolean onTouchWhenHeaderRefreshEnable(MotionEvent event) {
         switch (event.getAction()) {
@@ -525,21 +489,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         headerRefreshState = state;
     }
 
-    //    private void smoothScrollBy(int dx, int dy, OnSmoothScrollListener listener) {
-//        if (!scroller.isFinished()) {
-//            scroller.abortAnimation();
-//        }
-//        scroller.startScroll(getScrollX(), getScrollY(), dx, dy, scrollDurationFactor * Math.abs(dy));
-//        if (listener != null) {
-//            listener.onSmoothScrollStart();
-//        }
-//        postInvalidate();
-//    }
-//
-//    private void smoothScrollTo(int x, int y, OnSmoothScrollListener listener) {
-//        smoothScrollBy(x - getScrollX(), y - getScrollY(), listener);
-//
-//    }
     protected void smoothScrollTo(int value, int delayMillis, OnSmoothMoveFinishedListener listener) {
         switch (getRefreshableViewScrollDirection()) {
             case HORIZONTAL:
@@ -587,7 +536,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         ViewConfiguration config = ViewConfiguration.get(getContext());
         mTouchSlop = config.getScaledTouchSlop();
         mGestureDetector = new GestureDetector(new YScrollDetector());
-        scroller = new Scroller(getContext());
         setOrientation(VERTICAL);
         mContentWrapper = new FrameLayout(getContext());
         mContentWrapper.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
