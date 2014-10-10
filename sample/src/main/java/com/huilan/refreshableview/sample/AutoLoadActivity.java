@@ -12,6 +12,7 @@ import com.huilan.refreshableview.FooterRefreshMode;
 import com.huilan.refreshableview.OnFooterRefreshListener;
 import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
+import com.huilan.refreshableview.RefreshableListViewBase;
 
 import java.util.LinkedList;
 import java.util.Random;
@@ -35,10 +36,11 @@ public class AutoLoadActivity extends Activity implements OnFooterRefreshListene
 
     private void initView() {
         refreshlistview = (RefreshableListView) findViewById(R.id.rl_list);
-//        refreshlistview.setFooterEnable(FooterRefreshMode.AUTO);
+        refreshlistview.setAutoRemoveFooter(true);
+        refreshlistview.setFooterEnable(FooterRefreshMode.AUTO);
         refreshlistview.setHeaderEnable();
         list = new LinkedList<String>();
-        for (int i = 0; i < 12; ++i) {
+        for (int i = 0; i < 10; ++i) {
             list.add("这是listview的数据" + i);
         }
     }

@@ -12,6 +12,7 @@ import com.huilan.refreshableview.FooterRefreshMode;
 import com.huilan.refreshableview.OnFooterRefreshListener;
 import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
+import com.huilan.refreshableview.RefreshableListViewBase;
 
 import java.util.LinkedList;
 import java.util.Random;

@@ -16,26 +16,56 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * 下拉AbsListView基类
+ * 下拉ListView基类
  * Created by liudenghui on 14-10-9.
  */
-public abstract class RefreshableListViewBase<T extends ListView> extends RefreshableBase<T>
-        implements AbsListView.OnScrollListener {
-    protected boolean mFooterVisible = true;
+public abstract class RefreshableListViewBase<T extends ListView> extends RefreshableBase<T> implements ListView.OnScrollListener {
+    protected boolean mAutoRemoveFooter = true;
+    protected boolean mFooterEnable = false;
+    private List<View> mHeaderViews = new ArrayList<View>();
 
     public RefreshableListViewBase(Context context) {
         super(context);
+        init();
     }
 
     public RefreshableListViewBase(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     public RefreshableListViewBase(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init();
     }
 
+    public void addFooterView(View view) {
+        contentView.addFooterView(view);
+    }
+
+    public void addHeaderView(View view) {
+        contentView.addHeaderView(view);
+        mHeaderViews.add(view);
+    }
+
+    public void addHeaderView(View view, Object data, boolean isSelectable) {
+        contentView.addHeaderView(view, data, isSelectable);
+        mHeaderViews.add(view);
+    }
+
+    public int getFooterViewsCount() {
+        return contentView.getFooterViewsCount();
+    }
+
+    public int getHeaderViewsCount() {
+        return contentView.getHeaderViewsCount();
+    }
+
+    @Override
     public void notifyHeaderRefreshFinished(final RefreshResult result, final int millis, final NotifyListener listener) {
         headerView.refreshFinished(result);
         if (listener != null && result != RefreshResult.failure) {
@@ -43,7 +73,7 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
             post(new Runnable() {
                 @Override
                 public void run() {
-                    if(canFooterShow()){
+                    if (canAddFooter()) {
                         if (footerRefreshMode == FooterRefreshMode.AUTO) {
                             footerView.setClickable(false);
                             footerView.setFocusable(false);
@@ -76,6 +106,7 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
         }
     }
 
+    @Override
     public void notifyHeaderRefreshStarted(int millis) {
         postDelayed(new Runnable() {
             public void run() {
@@ -95,6 +126,24 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
                 }, scrollDurationFactor * Math.abs(getPaddingTop()));
             }
         }, millis);
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        if (scrollState == SCROLL_STATE_IDLE && mFooterEnable
+                && contentView.getLastVisiblePosition() == contentView.getCount() - 1) {
+            if (footerRefreshState == RefreshState.ORIGIN_STATE && footerRefreshMode == FooterRefreshMode.AUTO) {
+                footerRefreshState = RefreshState.REFRESHING;
+                footerView.refreshing();
+                if (onFooterRefreshListener != null) {
+                    onFooterRefreshListener.onFooterRefresh();
+                }
+            }
+        }
     }
 
     public void setEmptyView(View emptyView) {
@@ -142,7 +191,7 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
         postDelayed(new Runnable() {
             @Override
             public void run() {
-                if(canFooterShow()){
+                if (canAddFooter()) {
                     if (footerRefreshMode == FooterRefreshMode.AUTO) {
                         footerView.setClickable(false);
                         footerView.setFocusable(false);
@@ -152,7 +201,7 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
                     }
                 }
             }
-        },100);
+        }, 100);
 
     }
 
@@ -173,6 +222,25 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
     @Override
     protected Orientation getRefreshableViewScrollDirection() {
         return Orientation.VERTICAL;
+    }
+
+    @Override
+    protected boolean isContentViewAtBottom() {
+        return contentView.getLastVisiblePosition() == contentView.getCount() - 1;
+    }
+
+    @Override
+    protected boolean isContentViewAtTop() {
+        if (mHeaderViews == null || mHeaderViews.size() == 0) {
+            return contentView.getFirstVisiblePosition() == 0;
+        }
+        View childAt = contentView.getChildAt(0);
+//        System.out.println("top"+childAt.getTop() +"padt"+getPaddingTop() + mListView.getPaddingTop());
+        if (headerView != null) {
+            return childAt == headerView && childAt.getTop() >= contentView.getPaddingTop();
+        } else {
+            return childAt == mHeaderViews.get(mHeaderViews.size() - 1) && childAt.getTop() >= contentView.getPaddingTop();
+        }
     }
 
     @Override
@@ -219,6 +287,19 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
     }
 
     @Override
+    protected void smoothScrollTo(int value, int delayMillis, OnSmoothMoveFinishedListener listener) {
+        switch (getRefreshableViewScrollDirection()) {
+            case HORIZONTAL:
+                smoothScrollTo(value, 0, Math.abs(value + getPaddingLeft()) * scrollDurationFactor, delayMillis, listener);
+                break;
+            case VERTICAL:
+            default:
+                smoothScrollTo(0, value, Math.abs(value + getPaddingTop()) * scrollDurationFactor, delayMillis, listener);
+                break;
+        }
+    }
+
+    @Override
     protected void smoothScrollTo(int x, int y, int duration, long delayMillis, OnSmoothMoveFinishedListener listener) {
         if (null != mCurrentSmoothScrollRunnable) {
             mCurrentSmoothScrollRunnable.stop();
@@ -234,26 +315,32 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
         }
     }
 
-    @Override
-    protected void smoothScrollTo(int value, int delayMillis, OnSmoothMoveFinishedListener listener) {
-        switch (getRefreshableViewScrollDirection()) {
-            case HORIZONTAL:
-                smoothScrollTo(value, 0, Math.abs(value + getPaddingLeft()) * scrollDurationFactor, delayMillis, listener);
-                break;
-            case VERTICAL:
-            default:
-                smoothScrollTo(0, value, Math.abs(value + getPaddingTop()) * scrollDurationFactor, delayMillis, listener);
-                break;
+    private boolean canAddFooter() {
+        if(!mAutoRemoveFooter){
+            return true;
         }
-    }
-
-    private boolean canFooterShow() {
-        if (footerView != null && isContentViewAtTop()) {
+        if(footerView == null){
+            return false;
+        }
+        if (isContentViewAtTop()) {
             if (contentView.getChildAt(contentView.getChildCount() - 1).getBottom() < getHeight()) {
+                mFooterEnable = false;
                 return false;
             }
         }
+        mFooterEnable = true;
         return true;
     }
 
+    protected void init() {
+        contentView.setOnScrollListener(this);
+    }
+
+    /**
+     * 当数据内容小于一页时是否自动去除footerview
+     * @param autoRemoveFooter 是否自动去除
+     */
+    public void setAutoRemoveFooter(boolean autoRemoveFooter) {
+        mAutoRemoveFooter = autoRemoveFooter;
+    }
 }

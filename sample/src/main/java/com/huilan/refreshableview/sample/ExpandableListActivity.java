@@ -96,7 +96,7 @@ public class ExpandableListActivity extends Activity implements OnHeaderRefreshL
             tv.setClickable(false);
             tv.setFocusable(false);
             tv.setTextSize(25);
-            tv.setPadding(10, 10, 10, 10);
+            tv.setPadding(100, 10, 10, 10);
             tv.setText(mSubItems.get(childPosition));
             return tv;
         }
@@ -132,7 +132,7 @@ public class ExpandableListActivity extends Activity implements OnHeaderRefreshL
             tv.setClickable(false);
             tv.setFocusable(false);
             tv.setTextSize(25);
-            tv.setPadding(10, 10, 10, 10);
+            tv.setPadding(100, 10, 10, 10);
             tv.setText(mGroups.get(groupPosition));
             return tv;
         }

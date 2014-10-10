@@ -6,6 +6,7 @@ import com.huilan.refreshableview.NotifyListener;
 import com.huilan.refreshableview.OnHeaderRefreshListener;
 import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
+import com.huilan.refreshableview.RefreshableListViewBase;
 import com.lidroid.xutils.BitmapUtils;
 
 import android.app.Activity;

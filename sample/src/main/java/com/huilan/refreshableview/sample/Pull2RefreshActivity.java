@@ -6,6 +6,7 @@ import com.huilan.refreshableview.OnFooterRefreshListener;
 import com.huilan.refreshableview.OnHeaderRefreshListener;
 import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableListView;
+import com.huilan.refreshableview.RefreshableListViewBase;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -99,12 +100,12 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
     private void initView() {
         refreshlistview = (RefreshableListView) findViewById(R.id.rl_list);
         refreshlistview.setHeaderEnable();
-        refreshlistview.setFooterEnable(FooterRefreshMode.AUTO);
+//        refreshlistview.setFooterEnable(FooterRefreshMode.AUTO);
         list = new LinkedList<String>();
         refreshlistview.postDelayed(new Runnable() {
             @Override
             public void run() {
-                for (int i = 0; i < 12; ++i) {
+                for (int i = 0; i < 30; ++i) {
                     list.add("这是listview的数据" + i);
                     myAdpter.notifyDataSetChanged();
                 }

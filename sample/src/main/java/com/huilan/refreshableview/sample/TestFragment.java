@@ -23,12 +23,23 @@ import java.util.Random;
 /**
  * Created by liudenghui on 14-9-23.
  */
-public class TestFragment extends Fragment implements OnHeaderRefreshListener{
+public class TestFragment extends Fragment implements OnHeaderRefreshListener {
     private RefreshableListView refreshlistview;
     private LinkedList<String> list;
     private MyAdpter myAdpter;
     private int count = 0;
-
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    onVisible();
+                    break;
+                case 1:
+                    onInVisible();
+            }
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -45,39 +56,6 @@ public class TestFragment extends Fragment implements OnHeaderRefreshListener{
         refreshlistview.setEmptyView(inflater.inflate(R.layout.layout_loading, refreshlistview.getContentView(), false));
 
         return inflate;
-    }
-
-    private class MyAdpter extends BaseAdapter {
-        @Override
-        public int getCount() {
-            return list==null?0:list.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            TextView tv;
-            if (convertView == null) {
-                tv = new TextView(getActivity());
-            } else {
-                tv = (TextView) convertView;
-            }
-            tv.setClickable(false);
-            tv.setFocusable(false);
-            tv.setTextSize(25);
-            tv.setPadding(10, 10, 10, 10);
-            tv.setText(list.get(position));
-            return tv;
-        }
     }
 
     @Override
@@ -113,29 +91,49 @@ public class TestFragment extends Fragment implements OnHeaderRefreshListener{
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if(getUserVisibleHint()) {
+        if (getUserVisibleHint()) {
             mHandler.sendEmptyMessageDelayed(0, 100);
         } else {
-            mHandler.sendEmptyMessageDelayed(1,100);
+            mHandler.sendEmptyMessageDelayed(1, 100);
         }
     }
 
-    private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what){
-                case 0:
-                    onVisible();
-                    break;
-                case 1:
-                    onInVisible();
-            }
-        }
-    };
+    protected void onInVisible() {}
 
-    protected void onVisible(){
+    protected void onVisible() {
         refreshlistview.notifyHeaderRefreshStarted();
     }
 
-    protected void onInVisible(){}
+    private class MyAdpter extends BaseAdapter {
+        @Override
+        public int getCount() {
+            return list == null ? 0 : list.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            TextView tv;
+            if (convertView == null) {
+                tv = new TextView(getActivity());
+            } else {
+                tv = (TextView) convertView;
+            }
+            tv.setClickable(false);
+            tv.setFocusable(false);
+            tv.setTextSize(25);
+            tv.setPadding(10, 10, 10, 10);
+            tv.setText(list.get(position));
+            return tv;
+        }
+    }
 }
