@@ -113,8 +113,10 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
                 }
             }
         }, 0);
-
-
+        TextView textView = new TextView(this);
+        textView.setText("headerview");
+        textView.setTextSize(20);
+        refreshlistview.addHeaderView(textView);
 //        refreshlistview.notifyHeaderRefreshStarted();
     }
 
