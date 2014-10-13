@@ -3,25 +3,22 @@ package com.huilan.refreshableview.footerview;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.huilan.refreshableview.CustomView;
-import com.huilan.refreshableview.ICustomView;
 import com.huilan.refreshableview.R;
 import com.huilan.refreshableview.RefreshResult;
+import com.huilan.refreshableview.animation.IPullAnimation;
+import com.huilan.refreshableview.animation.RotatePullAnimation;
 
 /**
  * Created by liudenghui on 14-8-8.
  */
 public class AutoLoadFooterView extends CustomView {
 
-    private ProgressBar footer_progressbar;
-    private ImageView footer_image;
     private TextView footer_text_1;
     private TextView footer_text_2;
-
+    private IPullAnimation mPullAnimation;
 
     public AutoLoadFooterView(Context context) {
         super(context);
@@ -40,18 +37,17 @@ public class AutoLoadFooterView extends CustomView {
 
 
     private void init() {
-        inflate(getContext(), R.layout.layout_header, this);
+        inflate(getContext(), R.layout.rotate_header, this);
         footer_text_1 = (TextView) findViewById(R.id.header_text_1);
         footer_text_2 = (TextView) findViewById(R.id.header_text_2);
-        footer_progressbar = (ProgressBar) findViewById(R.id.header_progressbar);
-        footer_image = (ImageView) findViewById(R.id.header_image);
+        ImageView footer_image = (ImageView) findViewById(R.id.header_image);
+        mPullAnimation = new RotatePullAnimation(footer_image);
     }
 
     @Override
     public void originSate() {
         footer_text_1.setText("加载更多");
-        footer_image.setVisibility(GONE);
-        footer_progressbar.setVisibility(GONE);
+        mPullAnimation.reset();
     }
 
     @Override
@@ -60,10 +56,20 @@ public class AutoLoadFooterView extends CustomView {
     }
 
     @Override
+    public void onPull(int d, int canRefresh) {
+
+    }
+
+    @Override
     public void refreshing() {
         footer_text_1.setText("正在加载");
-        footer_image.setVisibility(GONE);
-        footer_progressbar.setVisibility(VISIBLE);
+        mPullAnimation.start();
+    }
+
+    @Override
+    public void setLastUpdateTime(String time) {
+        footer_text_2.setVisibility(VISIBLE);
+        footer_text_2.setText(time);
     }
 
     @Override
@@ -74,13 +80,11 @@ public class AutoLoadFooterView extends CustomView {
                 break;
             case nomore:
                 footer_text_1.setText("没有更多");
-                footer_image.setVisibility(GONE);
-                footer_progressbar.setVisibility(GONE);
+                mPullAnimation.reset();
                 break;
             case failure:
                 footer_text_1.setText("加载失败");
-                footer_image.setVisibility(GONE);
-                footer_progressbar.setVisibility(GONE);
+                mPullAnimation.reset();
                 break;
         }
     }

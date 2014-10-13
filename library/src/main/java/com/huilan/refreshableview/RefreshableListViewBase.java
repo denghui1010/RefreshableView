@@ -90,6 +90,7 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
                         @Override
                         public void run() {
                             setHeaderState(RefreshState.ORIGIN_STATE);
+                            //延迟100毫秒决定是否加载footer
                             postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -262,8 +263,7 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
 
     @Override
     protected boolean isContentViewAtBottom() {
-//        return contentView.getLastVisiblePosition() == contentView.getCount() - 1;
-        return false;
+        return contentView.getLastVisiblePosition() == contentView.getCount() - 1;
     }
 
     @Override
@@ -304,6 +304,7 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
                     } else if (paddingTop < canRefreshDis - headerHeight && headerRefreshState == RefreshState.CAN_REFRESH) {
                         setHeaderState(RefreshState.ORIGIN_STATE);
                     }
+                    headerView.onPull(paddingTop, canRefreshDis);
                     return true;
                 }
                 break;
@@ -367,7 +368,7 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
         if(headerView!=null){
             lastChildBottom -= headerHeight;
         }
-        System.out.println("lastChildBottom="+(lastChildBottom)+",getheight="+getHeight());
+//        System.out.println("lastChildBottom="+(lastChildBottom)+",getheight="+getHeight());
         if (mAutoRemoveFooter && isContentViewAtTop() && lastChildBottom < getHeight()) {
             mFooterEnable = false;
             return false;

@@ -2,7 +2,7 @@ package com.huilan.refreshableview;
 
 import com.huilan.refreshableview.footerview.AutoLoadFooterView;
 import com.huilan.refreshableview.footerview.Click2LoadFooterView;
-import com.huilan.refreshableview.headerview.Pull2RefreshHeaderView;
+import com.huilan.refreshableview.headerview.RotateHeaderView;
 import com.huilan.refreshableview.smoothscroll.OnSmoothMoveFinishedListener;
 import com.huilan.refreshableview.smoothscroll.SmoothMoveRunnableBase;
 import com.huilan.refreshableview.smoothscroll.SmoothScrollRunnable;
@@ -16,7 +16,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -404,9 +403,9 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
     protected CustomView getHeaderView(HeaderRefreshMode headerRefreshMode) {
         if (headerRefreshMode == HeaderRefreshMode.PULL) {
-            return new Pull2RefreshHeaderView(getContext());
+            return new RotateHeaderView(getContext());
         }
-        return new Pull2RefreshHeaderView(getContext());
+        return new RotateHeaderView(getContext());
     }
 
     /**
