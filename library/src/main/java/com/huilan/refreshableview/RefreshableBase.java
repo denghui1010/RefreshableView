@@ -45,10 +45,10 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     protected T contentView;
     protected int canRefreshDis;
     protected SmoothMoveRunnableBase mCurrentSmoothScrollRunnable;
+    protected FrameLayout mContentWrapper;
     private boolean requireInterupt;
     private int mTouchSlop;
     private GestureDetector mGestureDetector;
-    private FrameLayout mContentWrapper;
 
     public RefreshableBase(Context context) {
         super(context);
@@ -220,11 +220,11 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     public void notifyHeaderRefreshStarted(int millis) {
         postDelayed(new Runnable() {
             public void run() {
-                if (!isContentViewAtTop() || getScrollY() != headerHeight) {
+                if (!isContentViewAtTop() || getScrollY() != 0) {
                     return;
                 }
                 setHeaderState(RefreshState.REFRESHING);
-                smoothScrollTo(0);
+                smoothScrollTo(-headerHeight);
                 //延时到滑动进行完毕才进行真正的刷新回调
                 postDelayed(new Runnable() {
                     @Override
@@ -232,6 +232,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
                         if (onHeaderRefreshListener != null) {
                             onHeaderRefreshListener.onHeaderRefresh();
                         }
+                        adjustContentViewSize(-headerHeight);
                     }
                 }, scrollDurationFactor * Math.abs(0 - getScrollY()));
             }
@@ -382,6 +383,30 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         scrollTo(0, headerHeight);
     }
 
+    protected void adjustContentViewSize(int changeSize) {
+        ViewGroup.LayoutParams layoutParams = contentView.getLayoutParams();
+        switch (getRefreshableViewScrollDirection()) {
+            case HORIZONTAL:
+                if (mContentWrapper.getWidth() == contentView.getWidth()) {
+                    layoutParams.width = contentView.getWidth() + changeSize;
+                }
+                break;
+            case VERTICAL:
+                System.out.println("mconh=" + mContentWrapper.getHeight() + ",currhe=" + contentView.getHeight() + "changesize="
+                                           + changeSize);
+                if ((changeSize < 0 && mContentWrapper.getHeight() == contentView.getHeight()) || (changeSize > 0
+                        && mContentWrapper.getHeight() != contentView.getHeight())) {
+                    layoutParams.height = contentView.getHeight() + changeSize;
+                }
+
+            default:
+                break;
+        }
+        contentView.setLayoutParams(layoutParams);
+//        contentView.layout(contentView.getLeft(), contentView.getTop(), contentView.getRight(),
+//                           contentView.getBottom() + changeSize);
+    }
+
     /**
      * 中间内容view
      *
@@ -457,6 +482,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
                 } else if (getScrollY() < -canRefreshDis && headerRefreshState == RefreshState.ORIGIN_STATE) {
                     setHeaderState(RefreshState.CAN_REFRESH);
                 }
+                headerView.onPull(getScrollY(), canRefreshDis);
                 startY = currY;
                 break;
             case MotionEvent.ACTION_UP:
@@ -466,6 +492,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
                         onHeaderRefreshListener.onHeaderRefresh();
                     }
                     smoothScrollTo(-headerHeight);
+                    adjustContentViewSize(-headerHeight);
                 } else if (headerRefreshState != RefreshState.REFRESHING) {
                     smoothScrollTo(0);
                 }
@@ -532,17 +559,25 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     }
 
     private void init(AttributeSet attrs) {
-        ViewConfiguration config = ViewConfiguration.get(getContext());
+        final ViewConfiguration config = ViewConfiguration.get(getContext());
         mTouchSlop = config.getScaledTouchSlop();
         mGestureDetector = new GestureDetector(new YScrollDetector());
         setOrientation(VERTICAL);
         mContentWrapper = new FrameLayout(getContext());
-        mContentWrapper.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
         contentView = createContentView(attrs);
-        addView(mContentWrapper);
+        addView(mContentWrapper, -1, -1);
         if (contentView != null) {
-            mContentWrapper.addView(contentView);
+            mContentWrapper.addView(contentView, -1, -1);
         }
+        post(new Runnable() {
+            @Override
+            public void run() {
+                ViewGroup.LayoutParams layoutParams = mContentWrapper.getLayoutParams();
+                layoutParams.height = mContentWrapper.getHeight();
+                layoutParams.width = mContentWrapper.getWidth();
+                mContentWrapper.setLayoutParams(layoutParams);
+            }
+        });
     }
 
     private boolean onInterceptWhenFooterRefreshEnable(MotionEvent event) {

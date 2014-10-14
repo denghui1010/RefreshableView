@@ -3,9 +3,7 @@ package com.huilan.refreshableview.animation;
 import com.huilan.refreshableview.R;
 
 import android.graphics.Matrix;
-import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
+import android.os.Build;
 import android.widget.ImageView;
 
 /**
@@ -17,6 +15,8 @@ public class RotatePullAnimation implements IPullAnimation {
     private ImageView mImageView;
     private android.view.animation.RotateAnimation mRotateAnimation;
     private Matrix mHeaderImageMatrix;
+    private RotateRunnable mRotateRunnable;
+    private float mAngle;
 
     public RotatePullAnimation(ImageView imageView) {
         mImageView = imageView;
@@ -25,20 +25,29 @@ public class RotatePullAnimation implements IPullAnimation {
 
     @Override
     public void onPull(int dx, int canRefresh) {
-        mHeaderImageMatrix.setRotate((float) dx / canRefresh * 180, mImageView.getWidth() / 2, mImageView.getHeight() / 2);
+        mAngle = (float) dx / canRefresh * 180;
+        mHeaderImageMatrix.setRotate(mAngle, mImageView.getWidth() / 2, mImageView.getHeight() / 2);
         mImageView.setImageMatrix(mHeaderImageMatrix);
     }
 
     @Override
     public void reset() {
-        mImageView.clearAnimation();
+        stop();
         mHeaderImageMatrix.reset();
         mImageView.setImageMatrix(mHeaderImageMatrix);
     }
 
     @Override
     public void start() {
-        mImageView.startAnimation(mRotateAnimation);
+        mRotateRunnable = new RotateRunnable();
+        mImageView.post(mRotateRunnable);
+    }
+
+    @Override
+    public void stop() {
+        if (mRotateRunnable != null) {
+            mRotateRunnable.stop();
+        }
     }
 
     protected void init() {
@@ -46,10 +55,28 @@ public class RotatePullAnimation implements IPullAnimation {
         mImageView.setScaleType(ImageView.ScaleType.MATRIX);
         mHeaderImageMatrix = new Matrix();
         mImageView.setImageMatrix(mHeaderImageMatrix);
-        mRotateAnimation = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        mRotateAnimation.setInterpolator(new LinearInterpolator());
-        mRotateAnimation.setDuration(ROTATION_ANIMATION_DURATION);
-        mRotateAnimation.setRepeatCount(Animation.INFINITE);
-        mRotateAnimation.setRepeatMode(Animation.RESTART);
+    }
+
+    class RotateRunnable implements Runnable {
+        private boolean continueRun = true;
+
+        @Override
+        public void run() {
+            if (!continueRun) {
+                return;
+            }
+            mAngle += 10;
+            mHeaderImageMatrix.setRotate(mAngle, mImageView.getWidth() / 2, mImageView.getHeight() / 2);
+            mImageView.setImageMatrix(mHeaderImageMatrix);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                mImageView.postOnAnimation(this);
+            } else {
+                mImageView.postDelayed(this, 16);
+            }
+        }
+
+        public void stop() {
+            continueRun = false;
+        }
     }
 }

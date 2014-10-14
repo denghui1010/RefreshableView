@@ -49,7 +49,6 @@ public class RotateHeaderView extends CustomView {
     @Override
     public void originSate() {
         header_text_1.setText("下拉刷新");
-        mPullAnimation.reset();
     }
 
     @Override
@@ -58,12 +57,12 @@ public class RotateHeaderView extends CustomView {
             case hasmore:
             case nomore:
                 header_text_1.setText("刷新成功");
-                mPullAnimation.reset();
                 break;
             case failure:
                 header_text_1.setText("刷新失败");
-                mPullAnimation.reset();
+                break;
         }
+        mPullAnimation.stop();
     }
 
     @Override

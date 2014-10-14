@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.ListAdapter;
 
 /**
  * 下拉刷新ExpandableListView
@@ -24,15 +23,15 @@ public class RefreshableExpandableListView extends RefreshableListViewBase<Expan
         super(context, attrs, defStyle);
     }
 
+    public void setAdapter(ExpandableListAdapter adapter) {
+        contentView.setAdapter(adapter);
+    }
+
     @Override
     protected ExpandableListView createContentView(AttributeSet attrs) {
         ExpandableListView expandableListView = new ExpandableListView(getContext(), attrs);
         expandableListView.setId(R.id.refreshableexpandlistview);
         return expandableListView;
-    }
-
-    public void setAdapter(ExpandableListAdapter adapter) {
-        contentView.setAdapter(adapter);
     }
 
     @Override

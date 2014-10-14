@@ -10,7 +10,7 @@ import android.view.View;
 public class SmoothPaddingRunnable extends SmoothMoveRunnableBase {
 
     public SmoothPaddingRunnable(View view, int startX, int startY, int stopX, int stopY, int duration,
-                                OnSmoothMoveFinishedListener listener) {
+                                 OnSmoothMoveFinishedListener listener) {
         super(view, -startX, -startY, -stopX, -stopY, duration, listener);
     }
 

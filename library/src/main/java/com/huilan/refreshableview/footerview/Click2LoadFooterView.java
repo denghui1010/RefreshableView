@@ -1,17 +1,18 @@
 package com.huilan.refreshableview.footerview;
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.widget.ImageView;
-import android.widget.TextView;
-
 import com.huilan.refreshableview.CustomView;
 import com.huilan.refreshableview.R;
 import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.animation.IPullAnimation;
 import com.huilan.refreshableview.animation.RotatePullAnimation;
 
+import android.content.Context;
+import android.util.AttributeSet;
+import android.widget.ImageView;
+import android.widget.TextView;
+
 /**
+ * 点击加载footerview
  * Created by liudenghui on 14-8-8.
  */
 public class Click2LoadFooterView extends CustomView {
@@ -35,21 +36,6 @@ public class Click2LoadFooterView extends CustomView {
         init();
     }
 
-
-    private void init() {
-        inflate(getContext(), R.layout.rotate_header, this);
-        footer_text_1 = (TextView) findViewById(R.id.header_text_1);
-        footer_text_2 = (TextView) findViewById(R.id.header_text_2);
-        ImageView footer_image = (ImageView) findViewById(R.id.header_image);
-        mPullAnimation = new RotatePullAnimation(footer_image);
-    }
-
-    @Override
-    public void originSate() {
-        footer_text_1.setText("点击加载");
-        mPullAnimation.reset();
-    }
-
     @Override
     public void canRefresh() {
         refreshing();
@@ -58,6 +44,26 @@ public class Click2LoadFooterView extends CustomView {
     @Override
     public void onPull(int d, int canRefresh) {
 
+    }
+
+    @Override
+    public void originSate() {
+        footer_text_1.setText("点击加载");
+    }
+
+    @Override
+    public void refreshFinished(RefreshResult result) {
+        switch (result) {
+            case hasmore:
+                originSate();
+                break;
+            case nomore:
+                footer_text_1.setText("没有更多");
+                break;
+            case failure:
+                footer_text_1.setText("加载失败");
+        }
+        mPullAnimation.reset();
     }
 
     @Override
@@ -72,19 +78,11 @@ public class Click2LoadFooterView extends CustomView {
         footer_text_2.setText(time);
     }
 
-    @Override
-    public void refreshFinished(RefreshResult result) {
-        switch (result){
-            case hasmore:
-                originSate();
-                break;
-            case nomore:
-                footer_text_1.setText("没有更多");
-                mPullAnimation.reset();
-                break;
-            case failure:
-                footer_text_1.setText("加载失败");
-                mPullAnimation.reset();
-        }
+    private void init() {
+        inflate(getContext(), R.layout.rotate_header, this);
+        footer_text_1 = (TextView) findViewById(R.id.header_text_1);
+        footer_text_2 = (TextView) findViewById(R.id.header_text_2);
+        ImageView footer_image = (ImageView) findViewById(R.id.header_image);
+        mPullAnimation = new RotatePullAnimation(footer_image);
     }
 }

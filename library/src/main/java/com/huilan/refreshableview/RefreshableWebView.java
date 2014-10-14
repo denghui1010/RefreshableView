@@ -25,14 +25,9 @@ public class RefreshableWebView extends RefreshableBase<WebView> {
 
     @Override
     protected WebView createContentView(AttributeSet attrs) {
-        mWebView = new WebView(getContext(),attrs);
+        mWebView = new WebView(getContext(), attrs);
         mWebView.setId(R.id.refreshablewebview);
         return mWebView;
-    }
-
-    @Override
-    protected boolean isContentViewAtTop() {
-        return mWebView.getScrollY() == 0;
     }
 
     @Override
@@ -43,5 +38,10 @@ public class RefreshableWebView extends RefreshableBase<WebView> {
     @Override
     protected boolean isContentViewAtBottom() {
         return false;
+    }
+
+    @Override
+    protected boolean isContentViewAtTop() {
+        return mWebView.getScrollY() == 0;
     }
 }

@@ -35,6 +35,7 @@ public interface ICustomView {
 
     /**
      * 设置最后刷新时间
+     *
      * @param time 时间
      */
     void setLastUpdateTime(String time);

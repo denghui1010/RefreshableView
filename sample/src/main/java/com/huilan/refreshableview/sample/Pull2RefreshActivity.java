@@ -66,7 +66,7 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                for (int i = 0; i < 3; ++i, ++count) {
+                for (int i = 0; i < 1; ++i, ++count) {
                     list.addFirst("这是下拉刷新出来的数据" + count);
                 }
                 return null;
@@ -107,9 +107,14 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
         refreshlistview.postDelayed(new Runnable() {
             @Override
             public void run() {
-                for (int i = 0; i < 10; ++i) {
+                for (int i = 0; i < 14; ++i) {
                     list.add("这是listview的数据" + i);
-                    myAdpter.notifyDataSetChanged();
+                    refreshlistview.notifyHeaderRefreshFinished(RefreshResult.hasmore, new NotifyListener() {
+                        @Override
+                        public void notifyDataSetChanged() {
+                            myAdpter.notifyDataSetChanged();
+                        }
+                    });
                 }
             }
         }, 0);
@@ -118,6 +123,7 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
         textView.setTextSize(20);
         refreshlistview.addHeaderView(textView);
 //        refreshlistview.notifyHeaderRefreshStarted();
+
     }
 
     private class MyAdpter extends BaseAdapter {

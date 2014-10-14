@@ -17,7 +17,8 @@ public enum RefreshResult {
      */
     failure(0);
     final int rr_int;
-    RefreshResult(int i){
+
+    RefreshResult(int i) {
         rr_int = i;
     }
 }
