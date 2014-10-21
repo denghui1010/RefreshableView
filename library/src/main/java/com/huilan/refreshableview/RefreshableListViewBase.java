@@ -76,11 +76,12 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
                 }
             });
         }
-        adjustContentViewSize(headerHeight);
-        if (isContentViewAtTop()) {
-            //处于顶部位置,延迟一定时间收起headerview
-            postDelayed(new Runnable() {
-                public void run() {
+
+        //处于顶部位置,延迟一定时间收起headerview
+        postDelayed(new Runnable() {
+            public void run() {
+                adjustContentViewSize(headerHeight);
+                if (isContentViewAtTop()) {
                     smoothScrollTo(0);
                     //滑动完毕后才还原状态
                     postDelayed(new Runnable() {
@@ -89,13 +90,13 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
                             setHeaderState(RefreshState.ORIGIN_STATE);
                         }
                     }, scrollDurationFactor * Math.abs(headerHeight - getScrollY()));
+                } else {
+                    //不处于顶部,直接还原位置
+                    scrollTo(0, 0);
+                    setHeaderState(RefreshState.ORIGIN_STATE);
                 }
-            }, millis);
-        } else {
-            //不处于顶部,直接还原位置
-            scrollTo(0, 0);
-            setHeaderState(RefreshState.ORIGIN_STATE);
-        }
+            }
+        }, millis);
     }
 
     @Override
