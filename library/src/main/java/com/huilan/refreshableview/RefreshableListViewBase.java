@@ -1,16 +1,17 @@
 package com.huilan.refreshableview;
 
+import com.huilan.refreshableview.smoothscroll.OnSmoothMoveFinishedListener;
+import com.huilan.refreshableview.smoothscroll.SmoothPaddingRunnable;
+
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -22,10 +23,7 @@ import java.util.List;
  */
 public abstract class RefreshableListViewBase<T extends ListView> extends RefreshableBase<T>
         implements ListView.OnScrollListener {
-    protected boolean mAutoRemoveFooter = true;
-    protected boolean mFooterEnable = false;
     private List<View> mHeaderViews = new ArrayList<View>();
-    private boolean alreadyHasFooterView = false;
 
     public RefreshableListViewBase(Context context) {
         super(context);
@@ -56,6 +54,14 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
         mHeaderViews.add(view);
     }
 
+    public ListAdapter getAdapter() {
+        return contentView.getAdapter();
+    }
+
+    public void setAdapter(ListAdapter adapter) {
+        contentView.setAdapter(adapter);
+    }
+
     public int getFooterViewsCount() {
         return contentView.getFooterViewsCount();
     }
@@ -69,140 +75,58 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
         headerView.refreshFinished(result);
         if (listener != null && result != RefreshResult.failure) {
             listener.notifyDataSetChanged();
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    changeFooter();
-                }
-            });
         }
-
-        //处于顶部位置,延迟一定时间收起headerview
-        postDelayed(new Runnable() {
-            public void run() {
-                adjustContentViewSize(headerHeight);
-                if (isContentViewAtTop()) {
-                    smoothScrollTo(0);
-                    //滑动完毕后才还原状态
-                    postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            setHeaderState(RefreshState.ORIGIN_STATE);
-                        }
-                    }, scrollDurationFactor * Math.abs(headerHeight - getScrollY()));
-                } else {
-                    //不处于顶部,直接还原位置
-                    scrollTo(0, 0);
-                    setHeaderState(RefreshState.ORIGIN_STATE);
-                }
+        if (!isContentViewAtTop()) {
+            //回到顶部位置
+//            contentView.smoothScrollToPosition(0);
+            contentView.setSelection(0);
+        }
+        //延迟一定时间收起headerview
+        smoothScrollTo(headerHeight, millis, new OnSmoothMoveFinishedListener() {
+            @Override
+            public void onSmoothScrollFinished() {
+                //滑动完毕后才还原状态
+                setHeaderState(RefreshState.ORIGIN_STATE);
             }
-        }, millis);
+        });
     }
 
     @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-    }
-
-    @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
-        if (scrollState == SCROLL_STATE_IDLE && mFooterEnable
-                && contentView.getLastVisiblePosition() == contentView.getCount() - 1) {
-            if (footerRefreshState == RefreshState.ORIGIN_STATE && footerRefreshMode == FooterRefreshMode.AUTO) {
-                footerRefreshState = RefreshState.REFRESHING;
-                footerView.refreshing();
-                if (onFooterRefreshListener != null) {
-                    onFooterRefreshListener.onFooterRefresh();
-                }
-            }
-        }
-    }
-
-    /**
-     * 当数据内容小于一页时是否自动去除footerview
-     *
-     * @param autoRemoveFooter 是否自动去除
-     */
-    public void setAutoRemoveFooter(boolean autoRemoveFooter) {
-        mAutoRemoveFooter = autoRemoveFooter;
-    }
-
-    public void setDivider(Drawable divider) {
-        contentView.setDivider(divider);
-    }
-
-    public void setEmptyView(View emptyView) {
-        FrameLayout contentWrapper = getContentWrapper();
-        if (null != emptyView) {
-            emptyView.setClickable(true);
-            ViewParent emptyViewParent = emptyView.getParent();
-            if (null != emptyViewParent && emptyViewParent instanceof ViewGroup) {
-                ((ViewGroup) emptyViewParent).removeView(emptyView);
-            }
-            FrameLayout.LayoutParams newLp = null;
-            ViewGroup.LayoutParams lp = emptyView.getLayoutParams();
-            if (null != lp) {
-                newLp = new FrameLayout.LayoutParams(lp);
-                if (lp instanceof LinearLayout.LayoutParams) {
-                    newLp.gravity = ((LinearLayout.LayoutParams) lp).gravity;
-                } else {
-                    newLp.gravity = Gravity.CENTER;
-                }
-            }
-            if (null != newLp) {
-                contentWrapper.addView(emptyView, lp);
-            } else {
-                contentWrapper.addView(emptyView);
-            }
-        }
-        contentView.setEmptyView(emptyView);
-    }
-
-    @Override
-    public void setFooterEnable(ViewGroup.LayoutParams layoutParams, final FooterRefreshMode footerRefreshMode) {
+    public void setFooterEnable(final FooterRefreshMode footerRefreshMode) {
         footerView = getFooterView(footerRefreshMode);
+
         footerView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                footerRefreshState = RefreshState.REFRESHING;
-                footerView.refreshing();
+                setFooterState(RefreshState.REFRESHING);
                 onFooterRefreshListener.onFooterRefresh();
             }
         });
         this.footerRefreshMode = footerRefreshMode;
-        footerLayoutParams = new AbsListView.LayoutParams(layoutParams);
-        footerView.setLayoutParams(footerLayoutParams);
         footerView.originSate();
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                changeFooter();
-            }
-        }, 100);
-
+        if (footerRefreshMode == FooterRefreshMode.AUTO) {
+            footerView.setClickable(false);
+            footerView.setFocusable(false);
+            contentView.addFooterView(footerView, null, false);
+        } else {
+            contentView.addFooterView(footerView);
+        }
+        measureView(footerView);
+        footerHeight = footerView.getMeasuredHeight();
     }
 
     @Override
-    public void setHeaderEnable(ViewGroup.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
-        headerHeight = layoutParams.height;
-        canRefreshDis = layoutParams.height;
+    public void setHeaderEnable(HeaderRefreshMode headerRefreshMode) {
         this.headerRefreshMode = headerRefreshMode;
         headerView = getHeaderView(headerRefreshMode);
-        headerView.setLayoutParams(new AbsListView.LayoutParams(layoutParams));
         headerView.originSate();
         contentView.addHeaderView(headerView, null, false);
-        setPadding(getPaddingLeft(), -layoutParams.height, getPaddingRight(), getPaddingBottom());
-    }
-
-    public void setOnItemClickListener(AdapterView.OnItemClickListener listener) {
-        contentView.setOnItemClickListener(listener);
-    }
-
-    @Override
-    protected void adjustContentViewSize(int changeSize) {
-        if (null == contentView.getChildAt(0)) {
-            return;
-        }
-        super.adjustContentViewSize(changeSize);
+        measureView(headerView);
+        headerHeight = headerView.getMeasuredHeight();
+        canRefreshDis = headerHeight;
+        headerView
+                .setPadding(headerView.getPaddingLeft(), headerView.getPaddingTop() - headerHeight, headerView.getPaddingRight(),
+                            headerView.getPaddingBottom());
     }
 
     @Override
@@ -210,8 +134,25 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
         return Orientation.VERTICAL;
     }
 
-    protected void init() {
-        contentView.setOnScrollListener(this);
+        @Override
+    public void scrollBy(int x, int y) {
+        headerView.setPadding(headerView.getPaddingLeft()-x, headerView.getPaddingTop()-y, headerView.getPaddingRight(),
+                              headerView.getPaddingBottom());
+    }
+
+    @Override
+    public void scrollTo(int x, int y) {
+        headerView.setPadding(-x, -y, headerView.getPaddingRight(), headerView.getPaddingBottom());
+    }
+
+    @Override
+    protected int getScrollXInternal() {
+        return -headerView.getPaddingLeft();
+    }
+
+    @Override
+    protected int getScrollYInternal() {
+        return -headerView.getPaddingTop();
     }
 
     @Override
@@ -233,49 +174,59 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
         }
     }
 
-    private boolean canAddFooter() {
-        if (footerView == null) {
-            mFooterEnable = false;
-            return false;
+    @Override
+    protected void smoothScrollTo(int x, int y, int duration, long delayMillis, OnSmoothMoveFinishedListener listener) {
+        if (null != mCurrentSmoothScrollRunnable) {
+            mCurrentSmoothScrollRunnable.stop();
         }
-        if (null == contentView.getChildAt(0)) {
-            mFooterEnable = false;
-            return false;
-        }
-        int lastChildBottom;
-        View childAt = contentView.getChildAt(contentView.getChildCount() - 1);
-        if (childAt != null) {
-            lastChildBottom = childAt.getBottom();
-        } else {
-            lastChildBottom = 0;
-        }
-        if (headerView != null) {
-            lastChildBottom -= headerHeight;
-        }
-        System.out.println("lastChildBottom=" + (lastChildBottom) + ",getheight=" + getHeight());
-        if (mAutoRemoveFooter && isContentViewAtTop() && lastChildBottom < getHeight()) {
-            mFooterEnable = false;
-            return false;
-        }
-        mFooterEnable = true;
-        return true;
-    }
-
-    private void changeFooter() {
-        if (!alreadyHasFooterView) {
-            if (canAddFooter()) {
-                if (footerRefreshMode == FooterRefreshMode.AUTO) {
-                    footerView.setClickable(false);
-                    footerView.setFocusable(false);
-                    contentView.addFooterView(footerView, null, false);
-                } else {
-                    contentView.addFooterView(footerView);
-                }
-                alreadyHasFooterView = true;
+        if (getScrollXInternal() != x || getScrollYInternal() != y) {
+            mCurrentSmoothScrollRunnable = new SmoothPaddingRunnable(headerView, getScrollXInternal(), getScrollYInternal(), x, y,
+                                                                     duration, listener);
+            if (delayMillis > 0) {
+                postDelayed(mCurrentSmoothScrollRunnable, delayMillis);
             } else {
-                contentView.removeFooterView(footerView);
-                alreadyHasFooterView = false;
+                post(mCurrentSmoothScrollRunnable);
             }
         }
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        if (scrollState == SCROLL_STATE_IDLE && contentView.getLastVisiblePosition() == contentView.getCount() - 1) {
+            if (footerRefreshState == RefreshState.ORIGIN_STATE && footerRefreshMode == FooterRefreshMode.AUTO) {
+                setFooterState(RefreshState.REFRESHING);
+                if (onFooterRefreshListener != null) {
+                    onFooterRefreshListener.onFooterRefresh();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+    }
+
+    public void setDivider(Drawable divider) {
+        contentView.setDivider(divider);
+    }
+
+    public void setEmptyView(View emptyView) {
+        if (null != emptyView) {
+            emptyView.setClickable(true);
+            ViewParent emptyViewParent = emptyView.getParent();
+            if (null != emptyViewParent && emptyViewParent instanceof ViewGroup) {
+                ((ViewGroup) emptyViewParent).removeView(emptyView);
+            }
+            addView(emptyView);
+            contentView.setEmptyView(emptyView);
+        }
+    }
+
+    public void setOnItemClickListener(AdapterView.OnItemClickListener listener) {
+        contentView.setOnItemClickListener(listener);
+    }
+
+    protected void init() {
+        contentView.setOnScrollListener(this);
     }
 }

@@ -49,7 +49,7 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
             @Override
             protected void onPostExecute(Void result) {
                 myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyFooterRefreshFinished(RefreshResult.hasmore);
+                refreshlistview.notifyFooterRefreshFinished(RefreshResult.hasmore, null);
             }
         }.execute();
     }
@@ -100,7 +100,6 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
         refreshlistview = (RefreshableListView) findViewById(R.id.rl_list);
         refreshlistview
                 .setEmptyView(getLayoutInflater().inflate(R.layout.layout_loading, refreshlistview, false));
-        refreshlistview.setAutoRemoveFooter(true);
         refreshlistview.setHeaderEnable();
         refreshlistview.setFooterEnable(FooterRefreshMode.AUTO);
         list = new LinkedList<String>();
@@ -109,12 +108,7 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
             public void run() {
                 for (int i = 0; i < 14; ++i) {
                     list.add("这是listview的数据" + i);
-                    refreshlistview.notifyHeaderRefreshFinished(RefreshResult.hasmore, new NotifyListener() {
-                        @Override
-                        public void notifyDataSetChanged() {
-                            myAdpter.notifyDataSetChanged();
-                        }
-                    });
+                    myAdpter.notifyDataSetChanged();
                 }
             }
         }, 0);

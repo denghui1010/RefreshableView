@@ -13,7 +13,6 @@ import android.widget.ImageView;
 public class RotatePullAnimation implements IPullAnimation {
     private static final int ROTATION_ANIMATION_DURATION = 600;
     private ImageView mImageView;
-    private android.view.animation.RotateAnimation mRotateAnimation;
     private Matrix mHeaderImageMatrix;
     private RotateRunnable mRotateRunnable;
     private float mAngle;

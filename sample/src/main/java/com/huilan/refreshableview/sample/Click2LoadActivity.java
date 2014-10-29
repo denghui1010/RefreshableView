@@ -67,7 +67,7 @@ public class Click2LoadActivity extends Activity implements OnFooterRefreshListe
             @Override
             protected void onPostExecute(Void result) {
                 myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyFooterRefreshFinished(RefreshResult.nomore);
+                refreshlistview.notifyFooterRefreshFinished(RefreshResult.nomore, null);
             }
         }.execute();
     }

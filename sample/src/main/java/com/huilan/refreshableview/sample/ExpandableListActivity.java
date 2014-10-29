@@ -41,7 +41,7 @@ public class ExpandableListActivity extends Activity implements OnHeaderRefreshL
 
             protected void onPostExecute(Void paramAnonymousVoid) {
                 mMyadapter.notifyDataSetChanged();
-                mRefreshableview.notifyHeaderRefreshFinished(RefreshResult.hasmore);
+                mRefreshableview.notifyHeaderRefreshFinished(RefreshResult.hasmore, null);
             }
         }.execute();
     }

@@ -51,7 +51,7 @@ public class WebViewActivity extends Activity implements OnHeaderRefreshListener
         mClient = new WebViewClient() {
             public void onPageFinished(WebView webView, String paramAnonymousString) {
                 super.onPageFinished(webView, paramAnonymousString);
-                mRefreshableWebView.notifyHeaderRefreshFinished(RefreshResult.hasmore);
+                mRefreshableWebView.notifyHeaderRefreshFinished(RefreshResult.hasmore, null);
             }
 
             public boolean shouldOverrideUrlLoading(WebView webView, String paramAnonymousString) {

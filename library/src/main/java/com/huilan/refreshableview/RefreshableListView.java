@@ -25,10 +25,6 @@ public class RefreshableListView extends RefreshableListViewBase<ListView> {
         super(context, attrs, defStyle);
     }
 
-    public void setAdapter(ListAdapter adapter) {
-        contentView.setAdapter(adapter);
-    }
-
     @Override
     protected ListView createContentView(AttributeSet attrs) {
         ListView myListView = new MyListView(getContext(), attrs);

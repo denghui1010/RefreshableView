@@ -39,7 +39,6 @@ public class AutoLoadActivity extends Activity implements OnFooterRefreshListene
 
     private void initView() {
         refreshlistview = (RefreshableListView) findViewById(R.id.rl_list);
-        refreshlistview.setAutoRemoveFooter(true);
         refreshlistview.setFooterEnable(FooterRefreshMode.AUTO);
         refreshlistview.setHeaderEnable();
         list = new LinkedList<String>();
@@ -99,7 +98,7 @@ public class AutoLoadActivity extends Activity implements OnFooterRefreshListene
             @Override
             protected void onPostExecute(Void result) {
                 myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyFooterRefreshFinished(RefreshResult.nomore);
+                refreshlistview.notifyFooterRefreshFinished(RefreshResult.nomore, null);
             }
         }.execute();
     }

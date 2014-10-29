@@ -16,8 +16,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 /**
@@ -30,8 +28,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
     protected CustomView headerView;
     protected CustomView footerView;
-    protected ViewGroup.LayoutParams headerLayoutParams;
-    protected ViewGroup.LayoutParams footerLayoutParams;
     protected OnHeaderRefreshListener onHeaderRefreshListener;
     protected OnFooterRefreshListener onFooterRefreshListener;
     protected HeaderRefreshMode headerRefreshMode = HeaderRefreshMode.CLOSE;
@@ -45,7 +41,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     protected T contentView;
     protected int canRefreshDis;
     protected SmoothMoveRunnableBase mCurrentSmoothScrollRunnable;
-    protected FrameLayout mContentWrapper;
     private boolean requireInterupt;
     private int mTouchSlop;
     private GestureDetector mGestureDetector;
@@ -73,10 +68,6 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      */
     public T getContentView() {
         return contentView;
-    }
-
-    public FrameLayout getContentWrapper() {
-        return mContentWrapper;
     }
 
     /**
@@ -110,51 +101,63 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         return headerView;
     }
 
-    @Deprecated
-    public void notifyFooterRefreshFinished(final RefreshResult result, final BaseAdapter adapter, int millis) {
+    /**
+     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,延迟一定时间后收起footerview,请将刷新适配器的方法写在监听中
+     *
+     * @param result   刷新结果
+     * @param listener 通知监听器,请将刷新适配器的方法写在监听中
+     * @param millis   延迟毫秒值
+     */
+    public void notifyFooterRefreshFinished(final RefreshResult result, final int millis, final NotifyListener listener) {
         footerView.refreshFinished(result);
+        if (listener != null && result != RefreshResult.failure) {
+            listener.notifyDataSetChanged();
+        }
+        //延迟一定时间收起footerview
         postDelayed(new Runnable() {
             public void run() {
-                if (result != RefreshResult.failure && adapter != null) {
-                    adapter.notifyDataSetChanged();
-                } else if (result == RefreshResult.nomore) {
-                    footerRefreshState = RefreshState.NO_MORE;
-                    footerView.setFocusable(false);
-                    footerView.setClickable(false);
+                if (result == RefreshResult.nomore) {
+                    setFooterState(RefreshState.NO_MORE);
                 } else {
-                    footerRefreshState = RefreshState.ORIGIN_STATE;
+                    setFooterState(RefreshState.ORIGIN_STATE);
                 }
-                footerView.refreshFinished(result);
+//                if (isContentViewAtTop()) {
+//                    smoothScrollTo(headerHeight, 0, new OnSmoothMoveFinishedListener() {
+//                        @Override
+//                        public void onSmoothScrollFinished() {
+//                            //滑动完毕后才还原状态
+//                            if (result == RefreshResult.nomore) {
+//                                setFooterState(RefreshState.NO_MORE);
+//                            } else {
+//                                setFooterState(RefreshState.ORIGIN_STATE);
+//                            }
+//                        }
+//                    });
+//                } else {
+//                    scrollTo(0, headerHeight);
+//                    if (result == RefreshResult.nomore) {
+//                        setFooterState(RefreshState.NO_MORE);
+//                    } else {
+//                        setFooterState(RefreshState.ORIGIN_STATE);
+//                    }
+//                }
             }
         }, millis);
+
     }
 
     /**
-     * 通知底部刷新完毕,0延迟
+     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,1秒后会隐藏footerview,请将刷新适配器的方法写在监听中
      *
-     * @param result 刷新结果
+     * @param result   刷新结果
+     * @param listener 通知监听器,请将刷新适配器的方法写在监听中
      */
-    public void notifyFooterRefreshFinished(RefreshResult result) {
-        notifyFooterRefreshFinished(result, null, 0);
-    }
-
-    @Deprecated
-    public void notifyFooterRefreshFinished(RefreshResult result, BaseAdapter adapter) {
-        notifyFooterRefreshFinished(result, adapter, 500);
+    public void notifyFooterRefreshFinished(RefreshResult result, NotifyListener listener) {
+        notifyFooterRefreshFinished(result, 1000, listener);
     }
 
     /**
-     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,1秒后会隐藏footerview,不会进行刷新,使用带回调参数的方法可以获得更好的效果
-     *
-     * @param result 刷新结果
-     */
-    @Deprecated
-    public void notifyHeaderRefreshFinished(RefreshResult result) {
-        notifyHeaderRefreshFinished(result, 1000);
-    }
-
-    /**
-     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,1秒后会隐藏headerview,请将刷新适配器的方法写在监听中
+     * 通知下拉刷新已经完成,在你期望结束下拉刷新时需要调用此方法,1秒后会隐藏headerview,请将刷新适配器的方法写在监听中
      *
      * @param result   刷新结果
      * @param listener 通知监听器,请将刷新适配器的方法写在监听中
@@ -164,17 +167,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     }
 
     /**
-     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,延迟一定时间后收起headererview,不会进行刷新,使用带回调参数的方法可以获得更好的效果
-     *
-     * @param result 刷新结果
-     * @param millis 延迟毫秒值
-     */
-    public void notifyHeaderRefreshFinished(final RefreshResult result, int millis) {
-        notifyHeaderRefreshFinished(result, millis, null);
-    }
-
-    /**
-     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,延迟一定时间后收起headererview,请将刷新适配器的方法写在监听中
+     * 通知下拉刷新已经完成,在你期望结束下拉刷新时需要调用此方法,延迟一定时间后收起headererview,请将刷新适配器的方法写在监听中
      *
      * @param result   刷新结果
      * @param listener 通知监听器,请将刷新适配器的方法写在监听中
@@ -186,20 +179,18 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
             listener.notifyDataSetChanged();
         }
         //延迟一定时间收起headerview
-
         postDelayed(new Runnable() {
             public void run() {
                 if (isContentViewAtTop()) {
-                    smoothScrollTo(0);
-                    //滑动完毕后才还原状态
-                    postDelayed(new Runnable() {
+                    smoothScrollTo(headerHeight, 0, new OnSmoothMoveFinishedListener() {
                         @Override
-                        public void run() {
+                        public void onSmoothScrollFinished() {
+                            //滑动完毕后才还原状态
                             setHeaderState(RefreshState.ORIGIN_STATE);
                         }
-                    }, scrollDurationFactor * Math.abs(headerHeight - getScrollY()));
+                    });
                 } else {
-                    scrollTo(0, 0);
+                    scrollTo(0, headerHeight);
                     setHeaderState(RefreshState.ORIGIN_STATE);
                 }
             }
@@ -222,21 +213,19 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     public void notifyHeaderRefreshStarted(int millis) {
         postDelayed(new Runnable() {
             public void run() {
-                if (!isContentViewAtTop() || getScrollY() != 0) {
+                if (!isContentViewAtTop() || getScrollYInternal() != 0) {
                     return;
                 }
                 setHeaderState(RefreshState.REFRESHING);
-                smoothScrollTo(-headerHeight);
-                //延时到滑动进行完毕才进行真正的刷新回调
-                postDelayed(new Runnable() {
+                smoothScrollTo(0, 0, new OnSmoothMoveFinishedListener() {
                     @Override
-                    public void run() {
+                    public void onSmoothScrollFinished() {
+                        //延时到滑动进行完毕才进行真正的刷新回调
                         if (onHeaderRefreshListener != null) {
                             onHeaderRefreshListener.onHeaderRefresh();
                         }
-                        adjustContentViewSize(-headerHeight);
                     }
-                }, scrollDurationFactor * Math.abs(0 - getScrollY()));
+                });
             }
         }, millis);
     }
@@ -264,95 +253,92 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     }
 
     /**
-     * 设置开启上拉刷新,刷新view使用默认宽高度,默认上拉模式 FooterRefreshMode.AUTO
+     * 设置开启上拉刷新,默认上拉模式 FooterRefreshMode.AUTO
      */
     public void setFooterEnable() {
-        footerLayoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                        getResources().getDimensionPixelSize(R.dimen.default_footer_height));
-        setFooterEnable(footerLayoutParams, FooterRefreshMode.AUTO);
-    }
-
-    /**
-     * 设置开启上拉刷新,刷新view使用默认宽高度,默认上拉模式 FooterRefreshMode.AUTO
-     *
-     * @param footerRefreshMode footer刷新模式
-     */
-    public void setFooterEnable(FooterRefreshMode footerRefreshMode) {
-        footerLayoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                        getResources().getDimensionPixelSize(R.dimen.default_footer_height));
-        setFooterEnable(footerLayoutParams, footerRefreshMode);
-    }
-
-    /**
-     * 设置开启上拉刷新,默认上拉模式为 FooterRefreshMode.AUTO
-     *
-     * @param layoutParams 上拉view的layoutparams
-     */
-    public void setFooterEnable(ViewGroup.LayoutParams layoutParams) {
-        setFooterEnable(layoutParams, FooterRefreshMode.AUTO);
+        setFooterEnable(FooterRefreshMode.AUTO);
     }
 
     /**
      * 设置开启上拉刷新
      *
-     * @param layoutParams      上拉view的layoutparams
      * @param footerRefreshMode 刷新模式,FooterRefreshMode
      */
-    public void setFooterEnable(ViewGroup.LayoutParams layoutParams, FooterRefreshMode footerRefreshMode) {
-        footerHeight = layoutParams.height;
+    public void setFooterEnable(FooterRefreshMode footerRefreshMode) {
         footerView = getFooterView(footerRefreshMode);
         this.footerRefreshMode = footerRefreshMode;
-        footerView.setLayoutParams(footerLayoutParams);
-        footerLayoutParams = layoutParams;
         addView(footerView);
+        measureView(footerView);
+        footerHeight = footerView.getMeasuredHeight();
         footerView.originSate();
     }
 
     /**
-     * 设置开启下拉刷新,刷新view使用默认宽高度,默认下拉模式 HeaderRefreshMode.PULL
+     * 设置footerview的状态
+     *
+     * @param state 状态
+     */
+    public void setFooterState(RefreshState state) {
+        switch (state) {
+            case CAN_REFRESH:
+                footerView.canRefresh();
+                break;
+            case ORIGIN_STATE:
+                footerView.originSate();
+                break;
+            case REFRESHING:
+                footerView.refreshing();
+                break;
+            case NO_MORE:
+                footerView.setFocusable(false);
+                footerView.setClickable(false);
+                footerView.refreshFinished(RefreshResult.nomore);
+        }
+        footerRefreshState = state;
+    }
+
+    /**
+     * 设置开启下拉刷新,默认下拉模式 HeaderRefreshMode.PULL
      */
     public void setHeaderEnable() {
-        headerLayoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                        getResources().getDimensionPixelSize(R.dimen.default_header_height));
-        setHeaderEnable(headerLayoutParams, HeaderRefreshMode.PULL);
-    }
-
-    /**
-     * 设置开启下拉刷新,刷新view使用默认宽高度
-     *
-     * @param headerRefreshMode 刷新模式
-     */
-    public void setHeaderEnable(HeaderRefreshMode headerRefreshMode) {
-        headerLayoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                        getResources().getDimensionPixelSize(R.dimen.default_header_height));
-        setHeaderEnable(headerLayoutParams, headerRefreshMode);
-    }
-
-    /**
-     * 设置开启下拉刷新,默认下拉模式为 HeaderRefreshMode.PULL
-     *
-     * @param layoutParams 下拉view的layoutparams
-     */
-    public void setHeaderEnable(ViewGroup.LayoutParams layoutParams) {
-        setHeaderEnable(layoutParams, HeaderRefreshMode.PULL);
+        setHeaderEnable(HeaderRefreshMode.PULL);
     }
 
     /**
      * 设置开启下拉刷新
      *
-     * @param layoutParams      下拉view的layoutparams
      * @param headerRefreshMode 刷新模式,见HeaderRfreshMode
      */
-    public void setHeaderEnable(ViewGroup.LayoutParams layoutParams, HeaderRefreshMode headerRefreshMode) {
-        headerHeight = layoutParams.height;
-        canRefreshDis = layoutParams.height;
-        setPadding(getPaddingLeft(), -layoutParams.height, getPaddingRight(), getPaddingBottom());
+    public void setHeaderEnable(HeaderRefreshMode headerRefreshMode) {
         headerView = getHeaderView(headerRefreshMode);
         this.headerRefreshMode = headerRefreshMode;
-        headerLayoutParams = layoutParams;
-        headerView.setLayoutParams(layoutParams);
         addView(headerView, 0);
         headerView.originSate();
+        measureView(headerView);
+        headerHeight = headerView.getMeasuredHeight();
+        canRefreshDis = headerHeight;
+//        setPadding(getPaddingLeft(), getPaddingTop() - headerHeight, getPaddingRight(), getPaddingBottom());
+        scrollTo(0,headerHeight);
+    }
+
+    /**
+     * 设置headerview的状态
+     *
+     * @param state 状态
+     */
+    public void setHeaderState(RefreshState state) {
+        switch (state) {
+            case CAN_REFRESH:
+                headerView.canRefresh();
+                break;
+            case ORIGIN_STATE:
+                headerView.originSate();
+                break;
+            case REFRESHING:
+                headerView.refreshing();
+                break;
+        }
+        headerRefreshState = state;
     }
 
     /**
@@ -385,33 +371,33 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         scrollTo(0, headerHeight);
     }
 
-    protected void adjustContentViewSize(int changeSize) {
-        ViewGroup.LayoutParams layoutParams = contentView.getLayoutParams();
-        switch (getRefreshableViewScrollDirection()) {
-            case HORIZONTAL:
-                if (mContentWrapper.getWidth() == contentView.getWidth()) {
-                    layoutParams.width = contentView.getWidth() + changeSize;
-                }
-                break;
-            case VERTICAL:
-                System.out.println("mconh=" + mContentWrapper.getHeight() + ",currhe=" + contentView.getHeight() + "changesize="
-                                           + changeSize);
-                if ((changeSize < 0 && mContentWrapper.getHeight() == contentView.getHeight()) || (changeSize > 0
-                        && mContentWrapper.getHeight() != contentView.getHeight())) {
-                    layoutParams.height = contentView.getHeight() + changeSize;
-                }
-            default:
-                break;
-        }
-        contentView.setLayoutParams(layoutParams);
-    }
-
     /**
      * 中间内容view
      *
      * @return view
      */
     protected abstract T createContentView(AttributeSet attrs);
+
+//    protected void adjustContentViewSize(int changeSize) {
+//        ViewGroup.LayoutParams layoutParams = contentView.getLayoutParams();
+//        switch (getRefreshableViewScrollDirection()) {
+//            case HORIZONTAL:
+//                if (mContentWrapper.getWidth() == contentView.getWidth()) {
+//                    layoutParams.width = contentView.getWidth() + changeSize;
+//                }
+//                break;
+//            case VERTICAL:
+////                System.out.println("mconh=" + mContentWrapper.getHeight() + ",currhe=" + contentView.getHeight() + "changesize="
+////                                           + changeSize);
+//                if ((changeSize < 0 && mContentWrapper.getHeight() == contentView.getHeight()) || (changeSize > 0
+//                        && mContentWrapper.getHeight() != contentView.getHeight())) {
+//                    layoutParams.height = contentView.getHeight() + changeSize;
+//                }
+//            default:
+//                break;
+//        }
+//        contentView.setLayoutParams(layoutParams);
+//    }
 
     protected CustomView getFooterView(FooterRefreshMode footerRefreshMode) {
         if (footerRefreshMode == FooterRefreshMode.AUTO) {
@@ -439,6 +425,14 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      */
     protected abstract Orientation getRefreshableViewScrollDirection();
 
+    protected int getScrollXInternal() {
+        return getScrollX();
+    }
+
+    protected int getScrollYInternal() {
+        return getScrollY();
+    }
+
     /**
      * contentview是否滚动到底部
      *
@@ -453,6 +447,23 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      */
     protected abstract boolean isContentViewAtTop();
 
+    protected void measureView(View child) {
+        ViewGroup.LayoutParams p = child.getLayoutParams();
+        if (p == null) {
+            p = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
+        int childWidthSpec = ViewGroup.getChildMeasureSpec(0, 0, p.width);
+        int lpHeight = p.height;
+        int childHeightSpec;
+        if (lpHeight > 0) {
+            childHeightSpec = MeasureSpec.makeMeasureSpec(lpHeight, MeasureSpec.EXACTLY);
+        } else {
+            childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+        }
+        child.measure(childWidthSpec, childHeightSpec);
+    }
+
     protected boolean onTouchWhenHeaderRefreshEnable(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -461,8 +472,8 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
             case MotionEvent.ACTION_MOVE:
                 int currY = (int) event.getRawY();
                 int dY = currY - startY;
-                if (dY < 0 && -dY + getScrollY() > 0) {
-                    scrollTo(0, 0);
+                if (dY < 0 && -dY + getScrollYInternal()-headerHeight > 0) {
+                    scrollTo(0, headerHeight);
                     return true;
                 }
                 if (headerRefreshState != RefreshState.REFRESHING) {
@@ -476,12 +487,12 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 //                        scrollBy(0, -dY / 3);
 //                    }
                 }
-                if (getScrollY() > -canRefreshDis && headerRefreshState == RefreshState.CAN_REFRESH) {
+                if (getScrollYInternal()-headerHeight > -canRefreshDis && headerRefreshState == RefreshState.CAN_REFRESH) {
                     setHeaderState(RefreshState.ORIGIN_STATE);
-                } else if (getScrollY() < -canRefreshDis && headerRefreshState == RefreshState.ORIGIN_STATE) {
+                } else if (getScrollYInternal()-headerHeight < -canRefreshDis && headerRefreshState == RefreshState.ORIGIN_STATE) {
                     setHeaderState(RefreshState.CAN_REFRESH);
                 }
-                headerView.onPull(getScrollY(), canRefreshDis);
+                headerView.onPull(headerHeight-getScrollYInternal(), canRefreshDis);
                 startY = currY;
                 break;
             case MotionEvent.ACTION_UP:
@@ -490,38 +501,23 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
                     if (onHeaderRefreshListener != null) {
                         onHeaderRefreshListener.onHeaderRefresh();
                     }
-                    smoothScrollTo(-headerHeight);
-                    adjustContentViewSize(-headerHeight);
-                } else if (headerRefreshState != RefreshState.REFRESHING) {
                     smoothScrollTo(0);
+//                    adjustContentViewSize(-headerHeight);
+                } else if (headerRefreshState != RefreshState.REFRESHING) {
+                    smoothScrollTo(headerHeight);
                 }
         }
         return true;
     }
 
-    protected void setHeaderState(RefreshState state) {
-        switch (state) {
-            case CAN_REFRESH:
-                headerView.canRefresh();
-                break;
-            case ORIGIN_STATE:
-                headerView.originSate();
-                break;
-            case REFRESHING:
-                headerView.refreshing();
-                break;
-        }
-        headerRefreshState = state;
-    }
-
     protected void smoothScrollTo(int value, int delayMillis, OnSmoothMoveFinishedListener listener) {
         switch (getRefreshableViewScrollDirection()) {
             case HORIZONTAL:
-                smoothScrollTo(value, 0, Math.abs(value - getScrollX()) * scrollDurationFactor, delayMillis, listener);
+                smoothScrollTo(value, 0, Math.abs(value - getScrollXInternal()) * scrollDurationFactor, delayMillis, listener);
                 break;
             case VERTICAL:
             default:
-                smoothScrollTo(0, value, Math.abs(value - getScrollY()) * scrollDurationFactor, delayMillis, listener);
+                smoothScrollTo(0, value, Math.abs(value - getScrollYInternal()) * scrollDurationFactor, delayMillis, listener);
                 break;
         }
     }
@@ -538,8 +534,9 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         if (null != mCurrentSmoothScrollRunnable) {
             mCurrentSmoothScrollRunnable.stop();
         }
-        if (getScrollX() != x || getScrollY() != y) {
-            mCurrentSmoothScrollRunnable = new SmoothScrollRunnable(this, getScrollX(), getScrollY(), x, y, duration, listener);
+        if (getScrollXInternal() != x || getScrollYInternal() != y) {
+            mCurrentSmoothScrollRunnable = new SmoothScrollRunnable(this, getScrollXInternal(), getScrollYInternal(), x, y,
+                                                                    duration, listener);
             if (delayMillis > 0) {
                 postDelayed(mCurrentSmoothScrollRunnable, delayMillis);
             } else {
@@ -562,21 +559,8 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         mTouchSlop = config.getScaledTouchSlop();
         mGestureDetector = new GestureDetector(new YScrollDetector());
         setOrientation(VERTICAL);
-        mContentWrapper = new FrameLayout(getContext());
         contentView = createContentView(attrs);
-        addView(mContentWrapper, -1, -1);
-        if (contentView != null) {
-            mContentWrapper.addView(contentView, -1, -1);
-        }
-        post(new Runnable() {
-            @Override
-            public void run() {
-                ViewGroup.LayoutParams layoutParams = mContentWrapper.getLayoutParams();
-                layoutParams.height = mContentWrapper.getHeight();
-                layoutParams.width = mContentWrapper.getWidth();
-                mContentWrapper.setLayoutParams(layoutParams);
-            }
-        });
+        addView(contentView, -1, -1);
     }
 
     private boolean onInterceptWhenFooterRefreshEnable(MotionEvent event) {
