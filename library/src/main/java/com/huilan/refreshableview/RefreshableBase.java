@@ -213,7 +213,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     public void notifyHeaderRefreshStarted(int millis) {
         postDelayed(new Runnable() {
             public void run() {
-                if (!isContentViewAtTop() || getScrollYInternal() != 0) {
+                if (!isContentViewAtTop() || getScrollYInternal() != headerHeight) {
                     return;
                 }
                 setHeaderState(RefreshState.REFRESHING);
@@ -448,20 +448,37 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     protected abstract boolean isContentViewAtTop();
 
     protected void measureView(View child) {
-        ViewGroup.LayoutParams p = child.getLayoutParams();
-        if (p == null) {
-            p = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
+        measureView(child, 0,0);
+    }
 
-        int childWidthSpec = ViewGroup.getChildMeasureSpec(0, 0, p.width);
-        int lpHeight = p.height;
-        int childHeightSpec;
-        if (lpHeight > 0) {
-            childHeightSpec = MeasureSpec.makeMeasureSpec(lpHeight, MeasureSpec.EXACTLY);
-        } else {
-            childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+    private void measureView(View v, int width, int height) {
+        int widthSpec = 0;
+        int heightSpec = 0;
+        ViewGroup.LayoutParams params = v.getLayoutParams();
+        if (params == null) {
+            params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
-        child.measure(childWidthSpec, childHeightSpec);
+        if(width == 0){
+            widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.UNSPECIFIED);
+        }
+        else if (params.width > 0) {
+            widthSpec = MeasureSpec.makeMeasureSpec(params.width, MeasureSpec.EXACTLY);
+        } else if (params.width == -1) {
+            widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
+        } else if (params.width == -2) {
+            widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST);
+        }
+        if(height == 0){
+            heightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.UNSPECIFIED);
+        }
+        else if (params.height > 0) {
+            heightSpec = MeasureSpec.makeMeasureSpec(params.height, MeasureSpec.EXACTLY);
+        } else if (params.height == -1) {
+            heightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
+        } else if (params.height == -2) {
+            heightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST);
+        }
+        v.measure(widthSpec, heightSpec);
     }
 
     protected boolean onTouchWhenHeaderRefreshEnable(MotionEvent event) {
