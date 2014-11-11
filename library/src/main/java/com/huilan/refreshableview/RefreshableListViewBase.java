@@ -72,10 +72,14 @@ public abstract class RefreshableListViewBase<T extends ListView> extends Refres
 
     @Override
     public void notifyHeaderRefreshFinished(final RefreshResult result, final int millis, final NotifyListener listener) {
-        headerView.refreshFinished(result);
         if (listener != null && result != RefreshResult.failure) {
             listener.notifyDataSetChanged();
         }
+        if(headerRefreshMode == HeaderRefreshMode.CLOSE){
+            return;
+        }
+        setFooterState(RefreshState.ORIGIN_STATE);
+        headerView.refreshFinished(result);
         if (!isContentViewAtTop()) {
             //回到顶部位置
 //            contentView.smoothScrollToPosition(0);

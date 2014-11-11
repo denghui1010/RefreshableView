@@ -109,10 +109,13 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param millis   延迟毫秒值
      */
     public void notifyFooterRefreshFinished(final RefreshResult result, final int millis, final NotifyListener listener) {
-        footerView.refreshFinished(result);
         if (listener != null && result != RefreshResult.failure) {
             listener.notifyDataSetChanged();
         }
+        if(footerRefreshMode == FooterRefreshMode.CLOSE){
+            return;
+        }
+        footerView.refreshFinished(result);
         //延迟一定时间收起footerview
         postDelayed(new Runnable() {
             public void run() {
@@ -174,10 +177,13 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param millis   延迟毫秒值
      */
     public void notifyHeaderRefreshFinished(final RefreshResult result, final int millis, final NotifyListener listener) {
-        headerView.refreshFinished(result);
         if (listener != null && result != RefreshResult.failure) {
             listener.notifyDataSetChanged();
         }
+        if(headerRefreshMode == HeaderRefreshMode.CLOSE){
+            return;
+        }
+        headerView.refreshFinished(result);
         //延迟一定时间收起headerview
         postDelayed(new Runnable() {
             public void run() {
@@ -211,6 +217,9 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param millis 延迟毫秒值
      */
     public void notifyHeaderRefreshStarted(int millis) {
+        if(headerRefreshMode == HeaderRefreshMode.CLOSE){
+            return;
+        }
         postDelayed(new Runnable() {
             public void run() {
                 if (!isContentViewAtTop() || getScrollYInternal() != headerHeight) {
@@ -279,6 +288,9 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param state 状态
      */
     public void setFooterState(RefreshState state) {
+        if(footerRefreshMode == FooterRefreshMode.CLOSE){
+            return;
+        }
         switch (state) {
             case CAN_REFRESH:
                 footerView.canRefresh();
@@ -327,6 +339,9 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param state 状态
      */
     public void setHeaderState(RefreshState state) {
+        if(headerRefreshMode == HeaderRefreshMode.CLOSE){
+            return;
+        }
         switch (state) {
             case CAN_REFRESH:
                 headerView.canRefresh();

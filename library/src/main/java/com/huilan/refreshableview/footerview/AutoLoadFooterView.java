@@ -20,6 +20,7 @@ public class AutoLoadFooterView extends CustomView {
     private TextView footer_text_1;
     private TextView footer_text_2;
     private IPullAnimation mPullAnimation;
+    private ImageView mFooter_image;
 
     public AutoLoadFooterView(Context context) {
         super(context);
@@ -49,6 +50,7 @@ public class AutoLoadFooterView extends CustomView {
     @Override
     public void originSate() {
         footer_text_1.setText("加载更多");
+        mFooter_image.setVisibility(VISIBLE);
     }
 
     @Override
@@ -59,6 +61,7 @@ public class AutoLoadFooterView extends CustomView {
                 break;
             case nomore:
                 footer_text_1.setText("没有更多");
+                mFooter_image.setVisibility(INVISIBLE);
                 break;
             case failure:
                 footer_text_1.setText("加载失败");
@@ -83,7 +86,7 @@ public class AutoLoadFooterView extends CustomView {
         inflate(getContext(), R.layout.rotate_header, this);
         footer_text_1 = (TextView) findViewById(R.id.header_text_1);
         footer_text_2 = (TextView) findViewById(R.id.header_text_2);
-        ImageView footer_image = (ImageView) findViewById(R.id.header_image);
-        mPullAnimation = new RotatePullAnimation(footer_image);
+        mFooter_image = (ImageView) findViewById(R.id.header_image);
+        mPullAnimation = new RotatePullAnimation(mFooter_image);
     }
 }
