@@ -20,6 +20,11 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    public void commonlistview(View view) {
+        Intent intent = new Intent(this, CommonListViewActivity.class);
+        startActivity(intent);
+    }
+
     public void expandlistview(View view) {
         Intent intent = new Intent(this, ExpandableListActivity.class);
         startActivity(intent);

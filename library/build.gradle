@@ -40,8 +40,6 @@ task generateJavadoc(type: Javadoc) {
         variant.javaCompile.classpath.files
     }
     classpath = files(ext.classpath, ext.androidJar)
-    exclude '**/BuildConfig.java'
-    exclude '**/R.java'
 }
 
 task javadocJar(type: Jar, dependsOn: generateJavadoc) {

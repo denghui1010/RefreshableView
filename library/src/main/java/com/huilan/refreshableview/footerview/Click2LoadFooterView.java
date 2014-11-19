@@ -3,6 +3,7 @@ package com.huilan.refreshableview.footerview;
 import com.huilan.refreshableview.CustomView;
 import com.huilan.refreshableview.R;
 import com.huilan.refreshableview.RefreshResult;
+import com.huilan.refreshableview.Theme;
 import com.huilan.refreshableview.animation.IPullAnimation;
 import com.huilan.refreshableview.animation.RotatePullAnimation;
 
@@ -82,6 +83,8 @@ public class Click2LoadFooterView extends CustomView {
         inflate(getContext(), R.layout.rotate_header, this);
         footer_text_1 = (TextView) findViewById(R.id.header_text_1);
         footer_text_2 = (TextView) findViewById(R.id.header_text_2);
+        footer_text_1.setTextColor(Theme.getValue(getContext(),R.color.def_footer_text_color));
+        footer_text_2.setTextColor(Theme.getValue(getContext(),R.color.def_footer_text_color));
         ImageView footer_image = (ImageView) findViewById(R.id.header_image);
         mPullAnimation = new RotatePullAnimation(footer_image);
     }

@@ -11,7 +11,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -36,14 +35,13 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     protected RefreshState footerRefreshState = RefreshState.ORIGIN_STATE;
     protected int headerHeight;
     protected int footerHeight;
-    protected int startX;
-    protected int startY;
+    protected float startX;
+    protected float startY;
     protected T contentView;
     protected int canRefreshDis;
     protected SmoothMoveRunnableBase mCurrentSmoothScrollRunnable;
     private boolean requireInterupt;
     private int mTouchSlop;
-    private GestureDetector mGestureDetector;
 
     public RefreshableBase(Context context) {
         super(context);
@@ -112,7 +110,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         if (listener != null && result != RefreshResult.failure) {
             listener.notifyDataSetChanged();
         }
-        if(footerRefreshMode == FooterRefreshMode.CLOSE){
+        if (footerRefreshMode == FooterRefreshMode.CLOSE) {
             return;
         }
         footerView.refreshFinished(result);
@@ -180,7 +178,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         if (listener != null && result != RefreshResult.failure) {
             listener.notifyDataSetChanged();
         }
-        if(headerRefreshMode == HeaderRefreshMode.CLOSE){
+        if (headerRefreshMode == HeaderRefreshMode.CLOSE) {
             return;
         }
         headerView.refreshFinished(result);
@@ -217,7 +215,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param millis 延迟毫秒值
      */
     public void notifyHeaderRefreshStarted(int millis) {
-        if(headerRefreshMode == HeaderRefreshMode.CLOSE){
+        if (headerRefreshMode == HeaderRefreshMode.CLOSE) {
             return;
         }
         postDelayed(new Runnable() {
@@ -288,7 +286,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param state 状态
      */
     public void setFooterState(RefreshState state) {
-        if(footerRefreshMode == FooterRefreshMode.CLOSE){
+        if (footerRefreshMode == FooterRefreshMode.CLOSE) {
             return;
         }
         switch (state) {
@@ -330,7 +328,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
         headerHeight = headerView.getMeasuredHeight();
         canRefreshDis = headerHeight;
 //        setPadding(getPaddingLeft(), getPaddingTop() - headerHeight, getPaddingRight(), getPaddingBottom());
-        scrollTo(0,headerHeight);
+        scrollTo(0, headerHeight);
     }
 
     /**
@@ -339,7 +337,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
      * @param state 状态
      */
     public void setHeaderState(RefreshState state) {
-        if(headerRefreshMode == HeaderRefreshMode.CLOSE){
+        if (headerRefreshMode == HeaderRefreshMode.CLOSE) {
             return;
         }
         switch (state) {
@@ -463,68 +461,39 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     protected abstract boolean isContentViewAtTop();
 
     protected void measureView(View child) {
-        measureView(child, 0,0);
-    }
-
-    private void measureView(View v, int width, int height) {
-        int widthSpec = 0;
-        int heightSpec = 0;
-        ViewGroup.LayoutParams params = v.getLayoutParams();
-        if (params == null) {
-            params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
-        if(width == 0){
-            widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.UNSPECIFIED);
-        }
-        else if (params.width > 0) {
-            widthSpec = MeasureSpec.makeMeasureSpec(params.width, MeasureSpec.EXACTLY);
-        } else if (params.width == -1) {
-            widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
-        } else if (params.width == -2) {
-            widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST);
-        }
-        if(height == 0){
-            heightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.UNSPECIFIED);
-        }
-        else if (params.height > 0) {
-            heightSpec = MeasureSpec.makeMeasureSpec(params.height, MeasureSpec.EXACTLY);
-        } else if (params.height == -1) {
-            heightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
-        } else if (params.height == -2) {
-            heightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST);
-        }
-        v.measure(widthSpec, heightSpec);
+        measureView(child, 0, 0);
     }
 
     protected boolean onTouchWhenHeaderRefreshEnable(MotionEvent event) {
         switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                startY = (int) event.getRawY();
-                break;
+//            case MotionEvent.ACTION_DOWN:
+//                startY = (int) event.getRawY();
+//                break;
             case MotionEvent.ACTION_MOVE:
-                int currY = (int) event.getRawY();
-                int dY = currY - startY;
-                if (dY < 0 && -dY + getScrollYInternal()-headerHeight > 0) {
+                float currY = event.getRawY();
+                float dY = currY - startY;
+                if (dY < 0 && -dY + getScrollYInternal() - headerHeight > 0) {
                     scrollTo(0, headerHeight);
                     return true;
                 }
                 if (headerRefreshState != RefreshState.REFRESHING) {
-                    scrollBy(0, -dY / 3);
+                    scrollBy(0, (int)-dY / 3);
                 } else {
 //                    if (getScrollY() + headerHeight - dY <= 0) {
 //                        scrollTo(0, headerHeight);
 //                    } else if (dY < 0) {
-                    scrollBy(0, -dY);
+                    scrollBy(0, (int)-dY);
 //                    } else {
 //                        scrollBy(0, -dY / 3);
 //                    }
                 }
-                if (getScrollYInternal()-headerHeight > -canRefreshDis && headerRefreshState == RefreshState.CAN_REFRESH) {
+                if (getScrollYInternal() - headerHeight > -canRefreshDis && headerRefreshState == RefreshState.CAN_REFRESH) {
                     setHeaderState(RefreshState.ORIGIN_STATE);
-                } else if (getScrollYInternal()-headerHeight < -canRefreshDis && headerRefreshState == RefreshState.ORIGIN_STATE) {
+                } else if (getScrollYInternal() - headerHeight < -canRefreshDis
+                        && headerRefreshState == RefreshState.ORIGIN_STATE) {
                     setHeaderState(RefreshState.CAN_REFRESH);
                 }
-                headerView.onPull(headerHeight-getScrollYInternal(), canRefreshDis);
+                headerView.onPull(headerHeight - getScrollYInternal(), canRefreshDis);
                 startY = currY;
                 break;
             case MotionEvent.ACTION_UP:
@@ -589,10 +558,37 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     private void init(AttributeSet attrs) {
         final ViewConfiguration config = ViewConfiguration.get(getContext());
         mTouchSlop = config.getScaledTouchSlop();
-        mGestureDetector = new GestureDetector(new YScrollDetector());
         setOrientation(VERTICAL);
         contentView = createContentView(attrs);
         addView(contentView, -1, -1);
+    }
+
+    private void measureView(View v, int width, int height) {
+        int widthSpec = 0;
+        int heightSpec = 0;
+        ViewGroup.LayoutParams params = v.getLayoutParams();
+        if (params == null) {
+            params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        if (width == 0) {
+            widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.UNSPECIFIED);
+        } else if (params.width > 0) {
+            widthSpec = MeasureSpec.makeMeasureSpec(params.width, MeasureSpec.EXACTLY);
+        } else if (params.width == -1) {
+            widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
+        } else if (params.width == -2) {
+            widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST);
+        }
+        if (height == 0) {
+            heightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.UNSPECIFIED);
+        } else if (params.height > 0) {
+            heightSpec = MeasureSpec.makeMeasureSpec(params.height, MeasureSpec.EXACTLY);
+        } else if (params.height == -1) {
+            heightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
+        } else if (params.height == -2) {
+            heightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST);
+        }
+        v.measure(widthSpec, heightSpec);
     }
 
     private boolean onInterceptWhenFooterRefreshEnable(MotionEvent event) {
@@ -600,34 +596,29 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
     }
 
     private boolean onInterceptWhenHeaderRefreshEnable(MotionEvent event) {
+
         if (headerRefreshMode == HeaderRefreshMode.CLOSE) {
             return super.onInterceptTouchEvent(event);
         }
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                startX = (int) event.getRawX();
-                startY = (int) event.getRawY();
+                startX = event.getRawX();
+                startY = event.getRawY();
                 requireInterupt = false;
                 break;
             case MotionEvent.ACTION_MOVE:
-                int currY = (int) event.getRawY();
-                int currX = (int) event.getRawX();
-                int dX = currX - startX;
-                int dY = currY - startY;
+                float currY = event.getRawY();
+                float currX = event.getRawX();
+                float dX = currX - startX;
+                float dY = currY - startY;
                 if (headerRefreshState == RefreshState.REFRESHING) {
                     return false;
                 }
-                if (isContentViewAtTop() && dY > 0 && mGestureDetector.onTouchEvent(event)) {
+                if (isContentViewAtTop() && dY > mTouchSlop && dY > Math.abs(dX)) {
+                    startY += mTouchSlop;
                     requireInterupt = true;
                 }
-//                if (headerRefreshState == RefreshState.REFRESHING && (getScrollY()+dY<0)) {
-//                    requireInterupt = true;
-//                }
-//                System.out.println("slop="+mTouchSlop+",dx="+dX);
-//                if (dX > 0) {
-//                    requireInterupt = false;
-//                }
                 break;
         }
         return requireInterupt;
@@ -646,18 +637,7 @@ public abstract class RefreshableBase<T extends View> extends LinearLayout {
 
     public static enum Orientation {
         VERTICAL,
-        HORIZONTAL;
-    }
-
-    private class YScrollDetector extends GestureDetector.SimpleOnGestureListener {
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            /**
-             * 如果滚动更接近水平方向,返回false
-             */
-            return (Math.abs(distanceY) > Math.abs(distanceX));
-        }
+        HORIZONTAL
     }
 
 }

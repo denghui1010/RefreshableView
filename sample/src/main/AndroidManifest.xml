@@ -26,6 +26,7 @@
         <activity android:name=".ScrollViewActivity" />
         <activity android:name=".ImagePagerActivity" />
         <activity android:name=".ViewPagerPull2RActivity" />
+        <activity android:name=".CommonListViewActivity"/>
     </application>
 
 </manifest>

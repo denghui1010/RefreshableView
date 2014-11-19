@@ -3,6 +3,7 @@ package com.huilan.refreshableview.headerview;
 import com.huilan.refreshableview.CustomView;
 import com.huilan.refreshableview.R;
 import com.huilan.refreshableview.RefreshResult;
+import com.huilan.refreshableview.Theme;
 import com.huilan.refreshableview.animation.IPullAnimation;
 import com.huilan.refreshableview.animation.RotatePullAnimation;
 
@@ -81,6 +82,8 @@ public class RotateHeaderView extends CustomView {
         inflate(getContext(), R.layout.rotate_header, this);
         header_text_1 = (TextView) findViewById(R.id.header_text_1);
         header_text_2 = (TextView) findViewById(R.id.header_text_2);
+        header_text_1.setTextColor(Theme.getValue(getContext(), R.color.def_header_text_color));
+        header_text_2.setTextColor(Theme.getValue(getContext(), R.color.def_header_text_color));
         ImageView header_image = (ImageView) findViewById(R.id.header_image);
         mPullAnimation = new RotatePullAnimation(header_image);
     }

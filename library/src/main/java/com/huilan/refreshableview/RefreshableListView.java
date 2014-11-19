@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.widget.ListAdapter;
+import android.view.ViewConfiguration;
 import android.widget.ListView;
 
 /**
@@ -41,8 +41,10 @@ public class RefreshableListView extends RefreshableListViewBase<ListView> {
                                getResources().getDimensionPixelOffset(R.dimen.default_paddingright), 0);
     }
 
-    private class MyListView extends ListView {
-        private GestureDetector mGestureDetector;
+    public class MyListView extends ListView {
+        private float mFirstX;
+        private float mFirstY;
+        private int mTouchSlop;
 
         public MyListView(Context context) {
             super(context);
@@ -54,20 +56,35 @@ public class RefreshableListView extends RefreshableListViewBase<ListView> {
             init();
         }
 
+        public MyListView(Context context, AttributeSet attrs, int defStyle) {
+            super(context, attrs, defStyle);
+            init();
+        }
+
+        private void init(){
+            ViewConfiguration config = ViewConfiguration.get(getContext());
+            mTouchSlop = config.getScaledTouchSlop();
+        }
+
         @Override
         public boolean onInterceptTouchEvent(MotionEvent ev) {
-            return super.onInterceptTouchEvent(ev) && mGestureDetector.onTouchEvent(ev);
+
+//            switch (ev.getAction()) {
+//                case MotionEvent.ACTION_DOWN:
+//                    mFirstX = ev.getRawX();
+//                    mFirstY = ev.getRawY();
+//                    break;
+//                case MotionEvent.ACTION_MOVE:
+//                    float dx = ev.getRawX() - mFirstX;
+//                    float dy = ev.getRawY() - mFirstY;
+//                    if (dx > mTouchSlop && dx * 0.5 > dy) {
+//                        return false;
+//                    }
+//                    break;
+//
+//            }
+            return super.onInterceptTouchEvent(ev);
         }
 
-        private void init() {
-            mGestureDetector = new GestureDetector(new YScrollDetector());
-        }
-
-        private class YScrollDetector extends GestureDetector.SimpleOnGestureListener {
-            @Override
-            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                return Math.abs(distanceY) >= Math.abs(distanceX);
-            }
-        }
     }
 }
