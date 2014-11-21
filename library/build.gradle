@@ -17,6 +17,7 @@ android {
         versionName "0.7.6-SNAPSHOT"
     }
 }
+
 /*
  *生成javadoc 打包javadoc.jar 打包source.jar 上传所有
  */
