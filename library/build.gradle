@@ -1,10 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven'
-
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.1.0"
-
+    compileSdkVersion 21
+    buildToolsVersion '21.1.1'
     lintOptions {
         abortOnError false
     }
@@ -17,7 +15,6 @@ android {
         versionName "0.7.6-SNAPSHOT"
     }
 }
-
 /*
  *生成javadoc 打包javadoc.jar 打包source.jar 上传所有
  */
@@ -32,7 +29,6 @@ uploadArchives {
 
     }
 }
-
 task generateJavadoc(type: Javadoc) {
     title "Generates Javadoc for $uploadArchives.repositories.mavenDeployer.pom.artifactId $uploadArchives.repositories.mavenDeployer.pom.version API."
     source = android.sourceSets.main.java.srcDirs
@@ -42,18 +38,18 @@ task generateJavadoc(type: Javadoc) {
     }
     classpath = files(ext.classpath, ext.androidJar)
 }
-
 task javadocJar(type: Jar, dependsOn: generateJavadoc) {
     classifier = 'javadoc'
     from 'build/docs/javadoc'
 }
-
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from android.sourceSets.main.java.srcDirs
 }
-
 artifacts {
     archives javadocJar
     archives sourcesJar
+}
+
+dependencies {
 }
