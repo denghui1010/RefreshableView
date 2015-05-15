@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="refreshablelistview" type="id">false</item>
+    <item name="refreshableexpandlistview" type="id">false</item>
+    <item name="refreshablegridview" type="id">false</item>
+    <item name="refreshablescrollview" type="id">false</item>
+    <item name="refreshablewebview" type="id">false</item>
+
+</resources>

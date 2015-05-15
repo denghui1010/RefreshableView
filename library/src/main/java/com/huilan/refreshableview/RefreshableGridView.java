@@ -25,29 +25,7 @@ public class RefreshableGridView extends RefreshableBase<GridView> {
         super(context, attrs, defStyle);
     }
 
-    @Override
-    protected GridView createContentView(AttributeSet attrs) {
-        mGridView = new GridView(getContext(), attrs);
-        mGridView.setId(R.id.refreshablegridview);
-        return mGridView;
-    }
-
-    @Override
-    protected boolean isContentViewAtBottom() {
-        return false;
-    }
-
-    @Override
-    protected boolean isContentViewAtTop() {
-        return false;
-    }
-
-    @Override
-    protected Orientation getRefreshableViewScrollDirection() {
-        return Orientation.VERTICAL;
-    }
-
-    public void setEmptyView(final View emptyView){
+    public void setEmptyView(final View emptyView) {
         addView(emptyView);
         mGridView.setEmptyView(emptyView);
         post(new Runnable() {
@@ -59,6 +37,28 @@ public class RefreshableGridView extends RefreshableBase<GridView> {
                 emptyView.setLayoutParams(layoutParams);
             }
         });
+    }
+
+    @Override
+    protected GridView createContentView(AttributeSet attrs) {
+        mGridView = new GridView(getContext(), attrs);
+        mGridView.setId(R.id.refreshablegridview);
+        return mGridView;
+    }
+
+    @Override
+    protected Orientation getRefreshableViewScrollDirection() {
+        return Orientation.VERTICAL;
+    }
+
+    @Override
+    protected boolean isContentViewAtBottom() {
+        return false;
+    }
+
+    @Override
+    protected boolean isContentViewAtTop() {
+        return false;
     }
 
 }

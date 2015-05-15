@@ -31,6 +31,11 @@ public class RefreshableScrollView extends RefreshableBase<ScrollView> {
     }
 
     @Override
+    protected Orientation getRefreshableViewScrollDirection() {
+        return Orientation.VERTICAL;
+    }
+
+    @Override
     protected boolean isContentViewAtBottom() {
         return mScrollView.getScrollY() == mScrollView.getMeasuredHeight();
     }
@@ -38,11 +43,6 @@ public class RefreshableScrollView extends RefreshableBase<ScrollView> {
     @Override
     protected boolean isContentViewAtTop() {
         return mScrollView.getScrollY() == 0;
-    }
-
-    @Override
-    protected Orientation getRefreshableViewScrollDirection() {
-        return Orientation.VERTICAL;
     }
 
 }

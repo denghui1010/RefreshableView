@@ -39,7 +39,7 @@ public class ScrollViewActivity extends Activity implements OnHeaderRefreshListe
                     textView.setText("这是scrollview刷新出来第" + i + "条");
                     mLinearLayout.addView(textView, 0);
                 }
-                mScrollView.notifyHeaderRefreshFinished(RefreshResult.hasmore);
+                mScrollView.notifyHeaderRefreshFinished(RefreshResult.hasmore,null);
             }
         }.execute();
     }

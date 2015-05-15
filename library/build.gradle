@@ -2,19 +2,18 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.1.0"
+    compileSdkVersion 21
+    buildToolsVersion "21.1.2"
 
     lintOptions {
         abortOnError false
     }
 
     defaultConfig {
-        applicationId "com.huilan.refreshableview"
         minSdkVersion 9
-        targetSdkVersion 19
+        targetSdkVersion 21
         versionCode 1
-        versionName "0.7.5-SNAPSHOT"
+        versionName "0.7.6-SNAPSHOT"
     }
 }
 /*
@@ -24,29 +23,12 @@ uploadArchives {
     repositories.mavenDeployer {
         repository(url: "http://54.179.166.198:8081/nexus/content/repositories/snapshot/") {
             authentication(userName: "admin", password: "admin123")
-            pom.groupId = android.defaultConfig.applicationId
+            pom.groupId = "com.huilan.refreshableview"
             pom.version = android.defaultConfig.versionName
             pom.artifactId = "refreshableview"
         }
 
     }
-}
-
-task generateJavadoc(type: Javadoc) {
-    title "Generates Javadoc for $uploadArchives.repositories.mavenDeployer.pom.artifactId $uploadArchives.repositories.mavenDeployer.pom.version API."
-    source = android.sourceSets.main.java.srcDirs
-    ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
-    ext.classpath = android.libraryVariants.collect { variant ->
-        variant.javaCompile.classpath.files
-    }
-    classpath = files(ext.classpath, ext.androidJar)
-    exclude '**/BuildConfig.java'
-    exclude '**/R.java'
-}
-
-task javadocJar(type: Jar, dependsOn: generateJavadoc) {
-    classifier = 'javadoc'
-    from 'build/docs/javadoc'
 }
 
 task sourcesJar(type: Jar) {
@@ -55,6 +37,5 @@ task sourcesJar(type: Jar) {
 }
 
 artifacts {
-    archives javadocJar
     archives sourcesJar
 }

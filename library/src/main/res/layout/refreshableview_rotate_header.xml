@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:baselineAligned="false"
+    android:orientation="horizontal">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@+id/header_centerlayout">
+
+            <ImageView
+                android:id="@+id/header_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:contentDescription="@null"
+                android:src="@drawable/refreshableview_refresh" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/header_centerlayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/header_text_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:minEms="8"
+                android:text="下拉刷新"
+                android:textColor="@color/def_textcolor_d"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/header_text_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2014-7-30 10:22"
+                android:textColor="@color/def_textcolor_d"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </RelativeLayout>
+</LinearLayout>
