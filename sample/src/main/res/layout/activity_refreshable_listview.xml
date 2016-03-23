@@ -3,13 +3,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#ffcee0ff"
-    tools:context=".MainActivity">
+    tools:context=".Pull2RefreshActivity">
 
-    <com.huilan.refreshableview.RefreshableListView
-        android:scrollbarStyle="outsideOverlay"
-        android:id="@+id/rl_list"
-        android:divider="@drawable/hl_item_divider_line"
+    <com.huilan.refreshableview.RefreshableLayout
+        android:id="@+id/rl_rl"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+        <com.huilan.refreshableview.weight.RefreshableListView
+            android:id="@+id/rl_listview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@drawable/hl_item_divider_line"
+            android:scrollbarStyle="outsideOverlay" />
+
+    </com.huilan.refreshableview.RefreshableLayout>
 
 </RelativeLayout>

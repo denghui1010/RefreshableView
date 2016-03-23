@@ -2,18 +2,18 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
 
     lintOptions {
         abortOnError false
     }
 
     defaultConfig {
-        minSdkVersion 9
-        targetSdkVersion 21
+        minSdkVersion 14
+        targetSdkVersion 23
         versionCode 1
-        versionName "0.7.6-SNAPSHOT"
+        versionName "1.0.0-SNAPSHOT"
     }
 }
 /*
@@ -27,7 +27,6 @@ uploadArchives {
             pom.version = android.defaultConfig.versionName
             pom.artifactId = "refreshableview"
         }
-
     }
 }
 

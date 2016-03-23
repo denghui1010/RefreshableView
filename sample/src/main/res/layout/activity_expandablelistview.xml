@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.huilan.refreshableview.RefreshableExpandableListView
+    <com.huilan.refreshableview.weight.RefreshableExpandableListView
         android:id="@+id/expandlistview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

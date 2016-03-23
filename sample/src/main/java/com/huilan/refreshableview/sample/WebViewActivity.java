@@ -1,23 +1,25 @@
 package com.huilan.refreshableview.sample;
 
-import com.huilan.refreshableview.OnHeaderRefreshListener;
-import com.huilan.refreshableview.RefreshResult;
-import com.huilan.refreshableview.RefreshableWebView;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.huilan.refreshableview.RefreshResult;
+import com.huilan.refreshableview.RefreshableLayout;
+import com.huilan.refreshableview.weight.RefreshableWebView;
+
 /**
  * Created by liudenghui on 14-8-29.
  */
-public class WebViewActivity extends Activity implements OnHeaderRefreshListener {
+public class WebViewActivity extends Activity implements RefreshableLayout.OnRefreshListener {
     private WebViewClient mClient;
     private RefreshableWebView mRefreshableWebView;
     private WebView mWebView;
     private boolean which;
+    private RefreshableLayout mRefreshableLayout;
+
 
     public void onHeaderRefresh() {
         if (which) {
@@ -27,6 +29,11 @@ public class WebViewActivity extends Activity implements OnHeaderRefreshListener
             mWebView.loadUrl("http://www.sina.com");
             which = !which;
         }
+    }
+
+    @Override
+    public void onFooterRefresh() {
+
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -45,13 +52,13 @@ public class WebViewActivity extends Activity implements OnHeaderRefreshListener
 
     private void init() {
         mRefreshableWebView = ((RefreshableWebView) findViewById(R.id.webview));
-        mRefreshableWebView.setHeaderEnable();
-        mRefreshableWebView.setOnHeaderRefreshListener(this);
-        mWebView = mRefreshableWebView.getContentView();
+        mRefreshableLayout.setHeaderEnable();
+        mRefreshableLayout.setOnRefreshListener(this);
+        mWebView = mRefreshableWebView;
         mClient = new WebViewClient() {
             public void onPageFinished(WebView webView, String paramAnonymousString) {
                 super.onPageFinished(webView, paramAnonymousString);
-                mRefreshableWebView.notifyHeaderRefreshFinished(RefreshResult.hasmore, null);
+                mRefreshableLayout.notifyHeaderRefreshFinished(RefreshResult.hasmore);
             }
 
             public boolean shouldOverrideUrlLoading(WebView webView, String paramAnonymousString) {
@@ -60,6 +67,6 @@ public class WebViewActivity extends Activity implements OnHeaderRefreshListener
             }
         };
         mWebView.setWebViewClient(mClient);
-        mRefreshableWebView.notifyHeaderRefreshStarted();
+        mRefreshableLayout.notifyHeaderRefreshStarted();
     }
 }

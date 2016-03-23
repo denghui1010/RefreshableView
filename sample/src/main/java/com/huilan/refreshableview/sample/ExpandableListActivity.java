@@ -1,9 +1,5 @@
 package com.huilan.refreshableview.sample;
 
-import com.huilan.refreshableview.OnHeaderRefreshListener;
-import com.huilan.refreshableview.RefreshResult;
-import com.huilan.refreshableview.RefreshableExpandableListView;
-
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,15 +8,21 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
+import com.huilan.refreshableview.RefreshResult;
+import com.huilan.refreshableview.RefreshableLayout;
+import com.huilan.refreshableview.weight.RefreshableExpandableListView;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 
-public class ExpandableListActivity extends Activity implements OnHeaderRefreshListener {
+public class ExpandableListActivity extends Activity implements RefreshableLayout.OnRefreshListener {
     private int count = 0;
     private LinkedList<String> mGroups;
     private Myadapter mMyadapter;
     private RefreshableExpandableListView mRefreshableview;
+    private RefreshableLayout mRefreshableLayout;
+
     private ArrayList<String> mSubItems;
 
     public void onHeaderRefresh() {
@@ -41,9 +43,14 @@ public class ExpandableListActivity extends Activity implements OnHeaderRefreshL
 
             protected void onPostExecute(Void paramAnonymousVoid) {
                 mMyadapter.notifyDataSetChanged();
-                mRefreshableview.notifyHeaderRefreshFinished(RefreshResult.hasmore, null);
+                mRefreshableLayout.notifyHeaderRefreshFinished(RefreshResult.hasmore);
             }
         }.execute();
+    }
+
+    @Override
+    public void onFooterRefresh() {
+
     }
 
     protected void onCreate(Bundle paramBundle) {
@@ -55,11 +62,11 @@ public class ExpandableListActivity extends Activity implements OnHeaderRefreshL
 
     private void init() {
         mRefreshableview = ((RefreshableExpandableListView) findViewById(R.id.expandlistview));
-        mRefreshableview.setOnHeaderRefreshListener(this);
-        mRefreshableview.setHeaderEnable();
+        mRefreshableLayout.setOnRefreshListener(this);
+        mRefreshableLayout.setHeaderEnable();
         mMyadapter = new Myadapter();
         mRefreshableview.setAdapter(mMyadapter);
-        mRefreshableview.notifyHeaderRefreshStarted();
+        mRefreshableLayout.notifyHeaderRefreshStarted();
     }
 
     private void initData() {

@@ -9,9 +9,9 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.huilan.refreshableview.FooterRefreshMode;
-import com.huilan.refreshableview.OnFooterRefreshListener;
 import com.huilan.refreshableview.RefreshResult;
-import com.huilan.refreshableview.RefreshableListView;
+import com.huilan.refreshableview.RefreshableLayout;
+import com.huilan.refreshableview.weight.RefreshableListView;
 
 import java.util.LinkedList;
 import java.util.Random;
@@ -19,8 +19,10 @@ import java.util.Random;
 /**
  * Created by liudenghui on 14-8-8.
  */
-public class Click2LoadActivity extends Activity implements OnFooterRefreshListener {
+public class Click2LoadActivity extends Activity implements RefreshableLayout.OnRefreshListener {
     private RefreshableListView refreshlistview;
+    private RefreshableLayout mRefreshableLayout;
+
 
     private LinkedList<String> list;
     private MyAdpter myAdpter;
@@ -31,18 +33,26 @@ public class Click2LoadActivity extends Activity implements OnFooterRefreshListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_refreshable_listview);
         initView();
-        myAdpter = new MyAdpter();
-        refreshlistview.setAdapter(myAdpter);
-        refreshlistview.setOnFooterRefreshListener(this);
-    }
 
-    private void initView() {
-        refreshlistview = (RefreshableListView) findViewById(R.id.rl_list);
-        refreshlistview.setFooterEnable(FooterRefreshMode.CLICK);
-        list = new LinkedList<String>();
+        list = new LinkedList<>();
         for (int i = 0; i < 30; ++i) {
             list.add("这是listview的数据" + i);
         }
+        myAdpter = new MyAdpter();
+        refreshlistview.setAdapter(myAdpter);
+
+        mRefreshableLayout.setFooterEnable(FooterRefreshMode.CLICK);
+        mRefreshableLayout.setOnRefreshListener(this);
+    }
+
+    private void initView() {
+        refreshlistview = (RefreshableListView) findViewById(R.id.rl_listview);
+//        mRefreshableLayout = (RefreshableLayout) findViewById(R.id.rl_rl);
+    }
+
+    @Override
+    public void onHeaderRefresh() {
+
     }
 
     @Override
@@ -66,7 +76,7 @@ public class Click2LoadActivity extends Activity implements OnFooterRefreshListe
             @Override
             protected void onPostExecute(Void result) {
                 myAdpter.notifyDataSetChanged();
-                refreshlistview.notifyFooterRefreshFinished(RefreshResult.nomore, null);
+                mRefreshableLayout.notifyFooterRefreshFinished(RefreshResult.nomore);
             }
         }.execute();
     }

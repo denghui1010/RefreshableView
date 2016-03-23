@@ -1,10 +1,5 @@
 package com.huilan.refreshableview.sample;
 
-import com.huilan.refreshableview.NotifyListener;
-import com.huilan.refreshableview.OnHeaderRefreshListener;
-import com.huilan.refreshableview.RefreshResult;
-import com.huilan.refreshableview.RefreshableListView;
-
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,14 +8,19 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.huilan.refreshableview.RefreshResult;
+import com.huilan.refreshableview.RefreshableLayout;
+import com.huilan.refreshableview.weight.RefreshableListView;
+
 import java.util.LinkedList;
 import java.util.Random;
 
 /**
  * Created by liudenghui on 14-8-8.
  */
-public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshListener {
+public class Pull2RefreshActivity extends Activity implements RefreshableLayout.OnRefreshListener {
     private RefreshableListView refreshlistview;
+    private RefreshableLayout mRefreshableLayout;
 
     private LinkedList<String> list;
     private MyAdpter myAdpter;
@@ -46,30 +46,26 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
 
             @Override
             protected void onPostExecute(Void result) {
-                refreshlistview.notifyHeaderRefreshFinished(RefreshResult.hasmore, new NotifyListener() {
-                    @Override
-                    public void notifyDataSetChanged() {
-                        myAdpter.notifyDataSetChanged();
-                    }
-                });
+                mRefreshableLayout.notifyHeaderRefreshFinished(RefreshResult.hasmore);
+                myAdpter.notifyDataSetChanged();
             }
         }.execute();
+    }
+
+    @Override
+    public void onFooterRefresh() {
+
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_refreshable_listview);
-        initView();
-        myAdpter = new MyAdpter();
-        refreshlistview.setAdapter(myAdpter);
-        refreshlistview.setOnHeaderRefreshListener(this);
-    }
 
-    private void initView() {
-        refreshlistview = (RefreshableListView) findViewById(R.id.rl_list);
-        refreshlistview.setHeaderEnable();
-        list = new LinkedList<String>();
+        initView();
+
+        mRefreshableLayout.setHeaderEnable();
+        list = new LinkedList<>();
         refreshlistview.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -79,8 +75,15 @@ public class Pull2RefreshActivity extends Activity implements OnHeaderRefreshLis
                 }
             }
         }, 0);
+        myAdpter = new MyAdpter();
+        refreshlistview.setAdapter(myAdpter);
+        mRefreshableLayout.setOnRefreshListener(this);
+    }
 
-        refreshlistview.setEmptyView(getLayoutInflater().inflate(R.layout.layout_loading, refreshlistview.getContentView(), false));
+    private void initView() {
+        mRefreshableLayout = (RefreshableLayout) findViewById(R.id.rl_rl);
+        refreshlistview = (RefreshableListView) findViewById(R.id.rl_listview);
+//        refreshlistview.setEmptyView(getLayoutInflater().inflate(R.layout.layout_loading, mRefreshableLayout.getContentView(), false));
 //        refreshlistview.notifyHeaderRefreshStarted();
     }
 

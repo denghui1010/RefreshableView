@@ -1,15 +1,16 @@
 package com.huilan.refreshableview;
 
 /**
+ * 头部刷新模式
  * Created by liudenghui on 14-7-29.
  */
 public enum HeaderRefreshMode {
     /**
-     * 关闭
+     * 关闭头部刷新
      */
     CLOSE,
     /**
-     * 处于顶部时继续下拉显示刷新view,继续下拉到一定距离松手启动刷新
+     * 下拉刷新
      */
     PULL
 }

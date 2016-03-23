@@ -1,10 +1,5 @@
 package com.huilan.refreshableview.sample;
 
-import com.huilan.refreshableview.NotifyListener;
-import com.huilan.refreshableview.OnHeaderRefreshListener;
-import com.huilan.refreshableview.RefreshResult;
-import com.huilan.refreshableview.RefreshableListView;
-
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,13 +12,16 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.huilan.refreshableview.RefreshableLayout;
+import com.huilan.refreshableview.weight.RefreshableListView;
+
 import java.util.LinkedList;
 import java.util.Random;
 
 /**
  * Created by liudenghui on 14-9-23.
  */
-public class TestFragment extends Fragment implements OnHeaderRefreshListener{
+public class TestFragment extends Fragment implements RefreshableLayout.OnRefreshListener{
     private RefreshableListView refreshlistview;
     private LinkedList<String> list;
     private MyAdpter myAdpter;
@@ -33,16 +31,16 @@ public class TestFragment extends Fragment implements OnHeaderRefreshListener{
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View inflate = inflater.inflate(R.layout.activity_refreshable_listview, container, false);
-        refreshlistview = (RefreshableListView) inflate.findViewById(R.id.rl_list);
-        refreshlistview.setHeaderEnable();
+        refreshlistview = (RefreshableListView) inflate.findViewById(R.id.rl_listview);
+//        refreshlistview.setHeaderEnable();
         list = new LinkedList<String>();
         for (int i = 0; i < 30; ++i) {
             list.add("这是listview的数据" + i);
         }
         myAdpter = new MyAdpter();
         refreshlistview.setAdapter(myAdpter);
-        refreshlistview.setOnHeaderRefreshListener(this);
-        refreshlistview.setEmptyView(inflater.inflate(R.layout.layout_loading, refreshlistview.getContentView(), false));
+//        refreshlistview.setOnHeaderRefreshListener(this);
+//        refreshlistview.setEmptyView(inflater.inflate(R.layout.layout_loading, refreshlistview.getContentView(), false));
 
         return inflate;
     }
@@ -100,14 +98,19 @@ public class TestFragment extends Fragment implements OnHeaderRefreshListener{
 
             @Override
             protected void onPostExecute(Void result) {
-                refreshlistview.notifyHeaderRefreshFinished(RefreshResult.hasmore, new NotifyListener() {
-                    @Override
-                    public void notifyDataSetChanged() {
-                        myAdpter.notifyDataSetChanged();
-                    }
-                });
+//                refreshlistview.notifyHeaderRefreshFinished(RefreshResult.hasmore, new NotifyListener() {
+//                    @Override
+//                    public void notifyDataSetChanged() {
+//                        myAdpter.notifyDataSetChanged();
+//                    }
+//                });
             }
         }.execute();
+    }
+
+    @Override
+    public void onFooterRefresh() {
+
     }
 
     @Override
@@ -134,7 +137,7 @@ public class TestFragment extends Fragment implements OnHeaderRefreshListener{
     };
 
     protected void onVisible(){
-        refreshlistview.notifyHeaderRefreshStarted();
+//        refreshlistview.notifyHeaderRefreshStarted();
     }
 
     protected void onInVisible(){}

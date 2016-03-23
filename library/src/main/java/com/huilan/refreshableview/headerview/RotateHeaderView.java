@@ -1,16 +1,15 @@
 package com.huilan.refreshableview.headerview;
 
-import com.huilan.refreshableview.CustomView;
-import com.huilan.refreshableview.R;
-import com.huilan.refreshableview.RefreshResult;
-import com.huilan.refreshableview.Theme;
-import com.huilan.refreshableview.animation.IPullAnimation;
-import com.huilan.refreshableview.animation.RotatePullAnimation;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.huilan.refreshableview.CustomView;
+import com.huilan.refreshableview.R;
+import com.huilan.refreshableview.RefreshResult;
+import com.huilan.refreshableview.animation.IPullAnimation;
+import com.huilan.refreshableview.animation.RotatePullAnimation;
 
 /**
  * 下拉刷新headerview
@@ -24,21 +23,27 @@ public class RotateHeaderView extends CustomView {
 
     public RotateHeaderView(Context context) {
         super(context);
-        init();
     }
 
     public RotateHeaderView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
     }
 
     public RotateHeaderView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init();
     }
 
     @Override
-    public void canRefresh() {
+    public void initView() {
+        inflate(getContext(), R.layout.refreshableview_rotate_header, this);
+        header_text_1 = (TextView) findViewById(R.id.header_text_1);
+        header_text_2 = (TextView) findViewById(R.id.header_text_2);
+        ImageView header_image = (ImageView) findViewById(R.id.header_image);
+        mPullAnimation = new RotatePullAnimation(header_image);
+    }
+
+    @Override
+    public void onStart() {
         header_text_1.setText("松开刷新");
     }
 
@@ -48,12 +53,12 @@ public class RotateHeaderView extends CustomView {
     }
 
     @Override
-    public void originSate() {
+    public void onPrepare() {
         header_text_1.setText("下拉刷新");
     }
 
     @Override
-    public void refreshFinished(RefreshResult result) {
+    public void onFinished(RefreshResult result) {
         switch (result) {
             case hasmore:
             case nomore:
@@ -67,25 +72,13 @@ public class RotateHeaderView extends CustomView {
     }
 
     @Override
-    public void refreshing() {
+    public void onRefreshing() {
         header_text_1.setText("正在刷新");
         mPullAnimation.start();
     }
 
-    @Override
     public void setLastUpdateTime(String time) {
         header_text_2.setVisibility(VISIBLE);
         header_text_2.setText(time);
     }
-
-    private void init() {
-        inflate(getContext(), R.layout.refreshableview_rotate_header, this);
-        header_text_1 = (TextView) findViewById(R.id.header_text_1);
-        header_text_2 = (TextView) findViewById(R.id.header_text_2);
-        header_text_1.setTextColor(Theme.getValue(getContext(), R.color.def_header_text_color));
-        header_text_2.setTextColor(Theme.getValue(getContext(), R.color.def_header_text_color));
-        ImageView header_image = (ImageView) findViewById(R.id.header_image);
-        mPullAnimation = new RotatePullAnimation(header_image);
-    }
-
 }
