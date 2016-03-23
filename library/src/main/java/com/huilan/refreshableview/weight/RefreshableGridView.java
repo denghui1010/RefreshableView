@@ -57,4 +57,9 @@ public class RefreshableGridView extends GridView implements IRefreshable {
         return false;
     }
 
+    @Override
+    public void setOnOverScrollListener(OnOverScrollListener onOverScrollListener) {
+
+    }
+
 }

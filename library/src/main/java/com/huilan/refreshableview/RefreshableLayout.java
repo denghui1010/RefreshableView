@@ -13,7 +13,7 @@ import com.huilan.refreshableview.footerview.AutoLoadFooterView;
 import com.huilan.refreshableview.footerview.Click2LoadFooterView;
 import com.huilan.refreshableview.headerview.RotateHeaderView;
 import com.huilan.refreshableview.smoothscroll.OnSmoothMoveListener;
-import com.huilan.refreshableview.smoothscroll.SmoothScroller;
+import com.huilan.refreshableview.smoothscroll.SmoothScroller2;
 import com.huilan.refreshableview.weight.IRefreshable;
 
 /**
@@ -82,7 +82,7 @@ public class RefreshableLayout extends RelativeLayout {
     /**
      * 平滑滚动器
      */
-    private SmoothScroller mSmoothScroller;
+    private SmoothScroller2 mSmoothScroller;
 
     private boolean needDispatchDownEvent = false;
 
@@ -105,7 +105,7 @@ public class RefreshableLayout extends RelativeLayout {
     }
 
     private void init() {
-        mSmoothScroller = new SmoothScroller(this);
+        mSmoothScroller = new SmoothScroller2(this);
     }
 
     /**
@@ -382,26 +382,49 @@ public class RefreshableLayout extends RelativeLayout {
             View v = getChildAt(i);
             if (v instanceof IRefreshable) {
                 contentView = v;
-//                ((ListView) contentView).setOnScrollListener(new AbsListView.OnScrollListener() {
-//                    @Override
-//                    public void onScrollStateChanged(AbsListView view, int scrollState) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//                        if(!mSmoothScroller.isRunning()) {
-//                            if (((IRefreshable) contentView).canPullUp()) {
-//                                mSmoothScroller.smoothScrollTo(0, 100, 0, new OnSmoothMoveListener() {
-//                                    @Override
-//                                    public void onSmoothScrollFinished() {
-//                                        mSmoothScroller.smoothScrollTo(0, 0, 0, null);
-//                                    }
-//                                });
-//                            }
-//                        }
-//                    }
-//                });
+                ((IRefreshable) contentView).setOnOverScrollListener(new IRefreshable.OnOverScrollListener() {
+                    @Override
+                    public void onOverScroll(int dx, int dy) {
+                        if (dy > 0) {
+                            dy = Math.min(dy, 150);
+                            final int sqrt = (int)Math.sqrt(((dy * dy) - 0.3d) / 0.7d);
+                            final int duration = (int) Math.abs((dy - getScrollY()) * 2);
+                            System.out.println("上方边界回弹" + ",dy=" + dy + ",getScrollY" + getScrollY() + ",duration=" + duration + ",sqrt=" + sqrt);
+                            contentView.setVerticalScrollBarEnabled(false);
+                            mSmoothScroller.smoothScrollTo(0, (int)3.0*dy/4, duration, 0, new OnSmoothMoveListener() {
+                                @Override
+                                public void onSmoothScrollFinished() {
+                                    mSmoothScroller.smoothScrollTo(0, 0, duration, 0, new OnSmoothMoveListener() {
+                                        @Override
+                                        public void onSmoothScrollFinished() {
+                                            contentView.setVerticalScrollBarEnabled(true);
+                                        }
+                                    });
+                                }
+                            });
+//                            mSmoothScroller.bounceScroll(0, dy, duration, 0,null);
+                        } else {
+                            dy = Math.max(dy, -150);
+                            final int sqrt = (int) Math.sqrt(((dy * dy) - 0.3d) / 0.7d);
+                            final int duration = (int) Math.abs((dy - getScrollY()) * 2);
+                            System.out.println("下方边界回弹" + ",dy=" + dy + ",getScrollY" + getScrollY() + ",duration=" + duration + ",sqrt=" + sqrt);
+                            contentView.setVerticalScrollBarEnabled(false);
+                            mSmoothScroller.smoothScrollTo(0, (int)3.0*dy/4, duration, 0, new OnSmoothMoveListener() {
+                                @Override
+                                public void onSmoothScrollFinished() {
+                                    mSmoothScroller.smoothScrollTo(0, 0, duration, 0, new OnSmoothMoveListener() {
+                                        @Override
+                                        public void onSmoothScrollFinished() {
+                                            contentView.setVerticalScrollBarEnabled(true);
+                                        }
+                                    });
+                                }
+                            });
+//                            mSmoothScroller.bounceScroll(0, dy, duration, 0,null);
+
+                        }
+                    }
+                });
             }
         }
         if (contentView == null) {
@@ -432,6 +455,7 @@ public class RefreshableLayout extends RelativeLayout {
                     if (((IRefreshable) contentView).canPullDown()) {
                         //列表在顶端
                         if (dY > 0) {
+                            System.out.println("1");
                             //向下滑动,需要拦截
                             needInterrupt = true;
                             if (headerRefreshState == RefreshState.ORIGIN_STATE || headerRefreshState == RefreshState.CAN_REFRESH) {
@@ -451,6 +475,7 @@ public class RefreshableLayout extends RelativeLayout {
                                 setHeaderState(RefreshState.ORIGIN_STATE);
                             }
                         } else {
+                            System.out.println("2");
                             //上滑
                             needInterrupt = true;
                             if (-getScrollY() > 0) {
@@ -465,6 +490,7 @@ public class RefreshableLayout extends RelativeLayout {
                     } else if (((IRefreshable) contentView).canPullUp()) {
                         //列表在底端
                         if (dY > 0) {
+                            System.out.println("3");
                             //下滑
                             needInterrupt = true;
                             if (-getScrollY() > 0) {
@@ -476,6 +502,7 @@ public class RefreshableLayout extends RelativeLayout {
                                 needInterrupt = false;
                             }
                         } else {
+                            System.out.println("4");
                             //向上滑动,需要拦截
                             needInterrupt = true;
                             if (footerRefreshState == RefreshState.ORIGIN_STATE || footerRefreshState == RefreshState.CAN_REFRESH) {
@@ -507,19 +534,18 @@ public class RefreshableLayout extends RelativeLayout {
                     if (mOnRefreshListener != null) {
                         mOnRefreshListener.onHeaderRefresh();
                     }
+                    System.out.println("11");
                     mSmoothScroller.smoothScrollTo(0, -headerHeight, 0, null);
-                } else {
-                    //如果不是正在刷新,需要回滚到初始位置
-                    mSmoothScroller.smoothScrollTo(0, 0, 0, null);
-                }
-                if (footerRefreshState == RefreshState.CAN_REFRESH && getScrollY() > canRefreshDis) {
+                } else if (footerRefreshState == RefreshState.CAN_REFRESH && getScrollY() > canRefreshDis) {
                     setFooterState(RefreshState.REFRESHING);
                     if (mOnRefreshListener != null) {
                         mOnRefreshListener.onFooterRefresh();
                     }
+                    System.out.println("12");
                     mSmoothScroller.smoothScrollTo(0, footerHeight, 0, null);
-                } else {
-                    //如果不是正在刷新,需要回滚到初始位置
+                } else if (getScrollY() != 0) {
+                    //如果不是正在刷新且位置不正常,需要回滚到初始位置
+                    System.out.println("13");
                     mSmoothScroller.smoothScrollTo(0, 0, 0, null);
                 }
 
@@ -527,15 +553,12 @@ public class RefreshableLayout extends RelativeLayout {
                 break;
         }
         if (!needInterrupt) {
-//            if(needDispatchDownEvent){
-//                event.setAction(MotionEvent.ACTION_DOWN);
-//            }
             super.dispatchTouchEvent(event);
         } else {
             event.setAction(MotionEvent.ACTION_CANCEL);
             super.dispatchTouchEvent(event);
         }
-        System.out.println("needInterrupt=" + needInterrupt);
+//        System.out.println("needInterrupt=" + needInterrupt);
         return true;
     }
 

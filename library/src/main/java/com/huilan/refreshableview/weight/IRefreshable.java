@@ -19,7 +19,9 @@ public interface IRefreshable {
      */
     boolean canPullUp();
 
-    interface OnOverScrollListener{
-        void onOverScroll();
+    void setOnOverScrollListener(OnOverScrollListener onOverScrollListener);
+
+    interface OnOverScrollListener {
+        void onOverScroll(int dx, int dy);
     }
 }

@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <com.huilan.refreshableview.weight.RefreshableScrollView
-        android:id="@+id/scrollview"
+    <com.huilan.refreshableview.RefreshableLayout
+        android:id="@+id/rl_rl"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+        <com.huilan.refreshableview.weight.RefreshableScrollView
+            android:id="@+id/scrollview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </com.huilan.refreshableview.RefreshableLayout>
 
 </LinearLayout>

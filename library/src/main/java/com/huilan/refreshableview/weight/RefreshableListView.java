@@ -1,8 +1,6 @@
 package com.huilan.refreshableview.weight;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.SoundEffectConstants;
 import android.view.View;
@@ -15,27 +13,36 @@ import android.widget.ListView;
  */
 public class RefreshableListView extends ListView implements IRefreshable {
 
-    public RefreshableListView(Context context) {
-        super(context);
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public RefreshableListView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-    }
+    private int mDeltaX;
+    private int mDeltaY;
+    private OnOverScrollListener mOnOverScrollListener;
 
     public RefreshableListView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setOverScrollMode(OVER_SCROLL_NEVER);
     }
 
-    public RefreshableListView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+    public void setOnOverScrollListener(OnOverScrollListener onOverScrollListener) {
+        mOnOverScrollListener = onOverScrollListener;
+    }
+
+    @Override
+    protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
+        System.out.println("过滑:" + "scrollY=" + scrollY + ",clampedY=" + clampedY);
+        super.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
+        if (clampedY) {
+            if(mOnOverScrollListener!= null) {
+                mOnOverScrollListener.onOverScroll(mDeltaX, mDeltaY);
+//                System.out.println("边界回弹:开始");
+            }
+        }
     }
 
     @Override
     protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
-        System.out.println("边界回弹:"+"deY="+deltaY+",scrollY="+scrollY+",scrollRangeY="+scrollRangeY+",maxOverScrollY="+maxOverScrollY+",isTouch="+isTouchEvent);
+//        System.out.println("边界回弹:" + "deY=" + deltaY + ",scrollY=" + scrollY + ",scrollRangeY=" + scrollRangeY + ",maxOverScrollY=" + maxOverScrollY + ",isTouch=" + isTouchEvent);
+        mDeltaX = deltaX;
+        mDeltaY = deltaY;
         return super.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
     }
 

@@ -24,7 +24,7 @@ public class Pull2RefreshActivity extends Activity {
         refreshableLayout.setFooterEnable();
 
         ArrayList<String> list = new ArrayList<>();
-        for (int i = 0; i < 30; ++i) {
+        for (int i = 0; i < 20; ++i) {
             list.add("这是listView的数据" + i);
         }
         TestBaseAdapter testBaseAdapter = new TestBaseAdapter(list);

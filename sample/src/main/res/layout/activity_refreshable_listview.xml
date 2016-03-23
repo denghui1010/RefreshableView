@@ -2,15 +2,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffcee0ff"
     tools:context=".Pull2RefreshActivity">
 
     <com.huilan.refreshableview.RefreshableLayout
+        android:background="#131313"
         android:id="@+id/rl_rl"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <com.huilan.refreshableview.weight.RefreshableListView
+            android:background="#ffffff"
             android:id="@+id/rl_listview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

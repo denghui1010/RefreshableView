@@ -29,4 +29,9 @@ public class RefreshableImageView extends ImageView implements IRefreshable {
         return true;
     }
 
+    @Override
+    public void setOnOverScrollListener(OnOverScrollListener onOverScrollListener) {
+
+    }
+
 }

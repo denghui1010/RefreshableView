@@ -10,7 +10,7 @@ import com.huilan.refreshableview.RefreshResult;
 import com.huilan.refreshableview.RefreshableLayout;
 import com.huilan.refreshableview.weight.RefreshableScrollView;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 /**
  * Created by liudenghui on 14-8-29.
@@ -18,7 +18,7 @@ import java.util.LinkedList;
 public class ScrollViewActivity extends Activity implements RefreshableLayout.OnRefreshListener {
     private LinearLayout mLinearLayout;
     private RefreshableScrollView mScrollView;
-    private LinkedList<TextView> mTextViews;
+    private ArrayList<TextView> mTextViews;
     private RefreshableLayout mRefreshableLayout;
 
     public void onHeaderRefresh() {
@@ -55,11 +55,12 @@ public class ScrollViewActivity extends Activity implements RefreshableLayout.On
         setContentView(R.layout.activity_scrollview);
         initData();
         init();
-        mRefreshableLayout.notifyHeaderRefreshStarted();
+//        mRefreshableLayout.notifyHeaderRefreshStarted();
     }
 
     private void init() {
         mScrollView = ((RefreshableScrollView) findViewById(R.id.scrollview));
+        mRefreshableLayout = (RefreshableLayout) findViewById(R.id.rl_rl);
         mRefreshableLayout.setOnRefreshListener(this);
         mScrollView.addView(mLinearLayout);
         mRefreshableLayout.setHeaderEnable();
@@ -68,7 +69,7 @@ public class ScrollViewActivity extends Activity implements RefreshableLayout.On
     private void initData() {
         mLinearLayout = new LinearLayout(this);
         mLinearLayout.setOrientation(LinearLayout.VERTICAL);
-        mTextViews = new LinkedList<TextView>();
+        mTextViews = new ArrayList<>();
         for (int i = 0; i < 30; i++) {
             TextView textView = new TextView(this);
             textView.setTextSize(25);

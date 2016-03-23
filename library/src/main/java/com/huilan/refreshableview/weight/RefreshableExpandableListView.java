@@ -55,4 +55,9 @@ public class RefreshableExpandableListView extends ExpandableListView implements
         }
         return false;
     }
+
+    @Override
+    public void setOnOverScrollListener(OnOverScrollListener onOverScrollListener) {
+
+    }
 }

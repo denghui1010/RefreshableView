@@ -29,4 +29,9 @@ public class RefreshableTextView extends TextView implements IRefreshable {
         return true;
     }
 
+    @Override
+    public void setOnOverScrollListener(OnOverScrollListener onOverScrollListener) {
+
+    }
+
 }

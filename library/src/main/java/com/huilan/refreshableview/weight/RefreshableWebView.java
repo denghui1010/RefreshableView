@@ -39,4 +39,9 @@ public class RefreshableWebView extends WebView implements IRefreshable {
             return false;
         }
     }
+
+    @Override
+    public void setOnOverScrollListener(OnOverScrollListener onOverScrollListener) {
+
+    }
 }
