@@ -36,7 +36,7 @@ public class ImagePagerActivity extends Activity implements RefreshableLayout.On
             public void run() {
                 mMyAdpter.notifyDataSetChanged();
                 mImagePager.notifyDataSetChanged();
-                mRefreshableLayout.notifyHeaderRefreshFinished(RefreshResult.hasmore);
+                mRefreshableLayout.notifyHeaderRefreshFinished(new RefreshResult(true, "刷新成功"));
             }
         }, 2000);
     }
@@ -64,7 +64,7 @@ public class ImagePagerActivity extends Activity implements RefreshableLayout.On
             public void run() {
                 mMyAdpter.notifyDataSetChanged();
                 mImagePager.notifyDataSetChanged();
-                mRefreshableLayout.notifyHeaderRefreshFinished(RefreshResult.hasmore);
+                mRefreshableLayout.notifyHeaderRefreshFinished(new RefreshResult(true, "刷新成功"));
             }
         }, 2000);
     }

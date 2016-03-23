@@ -58,7 +58,7 @@ public class WebViewActivity extends Activity implements RefreshableLayout.OnRef
         mClient = new WebViewClient() {
             public void onPageFinished(WebView webView, String paramAnonymousString) {
                 super.onPageFinished(webView, paramAnonymousString);
-                mRefreshableLayout.notifyHeaderRefreshFinished(RefreshResult.hasmore);
+                mRefreshableLayout.notifyHeaderRefreshFinished(new RefreshResult(true, "刷新成功"));
             }
 
             public boolean shouldOverrideUrlLoading(WebView webView, String paramAnonymousString) {

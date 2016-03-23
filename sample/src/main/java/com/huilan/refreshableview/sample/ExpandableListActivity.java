@@ -43,7 +43,7 @@ public class ExpandableListActivity extends Activity implements RefreshableLayou
 
             protected void onPostExecute(Void paramAnonymousVoid) {
                 mMyadapter.notifyDataSetChanged();
-                mRefreshableLayout.notifyHeaderRefreshFinished(RefreshResult.hasmore);
+                mRefreshableLayout.notifyHeaderRefreshFinished(new RefreshResult(true, "刷新成功"));
             }
         }.execute();
     }

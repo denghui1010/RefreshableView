@@ -59,15 +59,7 @@ public class RotateHeaderView extends CustomView {
 
     @Override
     public void onFinished(RefreshResult result) {
-        switch (result) {
-            case hasmore:
-            case nomore:
-                header_text_1.setText("刷新成功");
-                break;
-            case failure:
-                header_text_1.setText("刷新失败");
-                break;
-        }
+        header_text_1.setText(result.getMessage());
         mPullAnimation.stop();
     }
 

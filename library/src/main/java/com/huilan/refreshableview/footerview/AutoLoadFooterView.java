@@ -61,18 +61,7 @@ public class AutoLoadFooterView extends CustomView {
 
     @Override
     public void onFinished(RefreshResult result) {
-        switch (result) {
-            case hasmore:
-                onPrepare();
-                break;
-            case nomore:
-                footer_text_1.setText("没有更多");
-                mFooter_image.setVisibility(INVISIBLE);
-                break;
-            case failure:
-                footer_text_1.setText("加载失败");
-                break;
-        }
+        footer_text_1.setText(result.getMessage());
         mPullAnimation.reset();
     }
 

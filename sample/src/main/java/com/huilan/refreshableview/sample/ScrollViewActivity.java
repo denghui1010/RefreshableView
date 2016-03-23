@@ -40,7 +40,7 @@ public class ScrollViewActivity extends Activity implements RefreshableLayout.On
                     textView.setText("这是scrollview刷新出来第" + i + "条");
                     mLinearLayout.addView(textView, 0);
                 }
-                mRefreshableLayout.notifyHeaderRefreshFinished(RefreshResult.hasmore);
+                mRefreshableLayout.notifyHeaderRefreshFinished(new RefreshResult(true, "刷新成功"));
             }
         }.execute();
     }
