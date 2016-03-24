@@ -386,12 +386,11 @@ public class RefreshableLayout extends RelativeLayout {
                     @Override
                     public void onOverScroll(int dx, int dy) {
                         if (dy > 0) {
-                            dy = Math.min(dy, 150);
-                            final int sqrt = (int)Math.sqrt(((dy * dy) - 0.3d) / 0.7d);
-                            final int duration = (int) Math.abs((dy - getScrollY()) * 2);
-                            System.out.println("上方边界回弹" + ",dy=" + dy + ",getScrollY" + getScrollY() + ",duration=" + duration + ",sqrt=" + sqrt);
+                            dy = Math.min(3 * dy / 4, 80);
+                            final int duration = (int) (0.000066 * dy * dy * dy - 0.0155 * dy * dy + 1.245 * dy + 135.77);
+                            System.out.println("下边界回弹" + ",dy=" + dy + ",getScrollY" + getScrollY() + ",duration=" + duration);
                             contentView.setVerticalScrollBarEnabled(false);
-                            mSmoothScroller.smoothScrollTo(0, (int)3.0*dy/4, duration, 0, new OnSmoothMoveListener() {
+                            mSmoothScroller.smoothScrollTo(0, dy, duration, 0, new OnSmoothMoveListener() {
                                 @Override
                                 public void onSmoothScrollFinished() {
                                     mSmoothScroller.smoothScrollTo(0, 0, duration, 0, new OnSmoothMoveListener() {
@@ -404,12 +403,11 @@ public class RefreshableLayout extends RelativeLayout {
                             });
 //                            mSmoothScroller.bounceScroll(0, dy, duration, 0,null);
                         } else {
-                            dy = Math.max(dy, -150);
-                            final int sqrt = (int) Math.sqrt(((dy * dy) - 0.3d) / 0.7d);
-                            final int duration = (int) Math.abs((dy - getScrollY()) * 2);
-                            System.out.println("下方边界回弹" + ",dy=" + dy + ",getScrollY" + getScrollY() + ",duration=" + duration + ",sqrt=" + sqrt);
+                            dy = Math.max(3 * dy / 4, -80);
+                            final int duration = (int) (-0.000066 * dy * dy * dy - 0.0155 * dy * dy - 1.245 * dy + 135.77);
+                            System.out.println("上方边界回弹" + ",dy=" + dy + ",getScrollY" + getScrollY() + ",duration=" + duration);
                             contentView.setVerticalScrollBarEnabled(false);
-                            mSmoothScroller.smoothScrollTo(0, (int)3.0*dy/4, duration, 0, new OnSmoothMoveListener() {
+                            mSmoothScroller.smoothScrollTo(0, dy, duration, 0, new OnSmoothMoveListener() {
                                 @Override
                                 public void onSmoothScrollFinished() {
                                     mSmoothScroller.smoothScrollTo(0, 0, duration, 0, new OnSmoothMoveListener() {
@@ -433,6 +431,136 @@ public class RefreshableLayout extends RelativeLayout {
     }
 
 
+//    @Override
+//    public boolean dispatchTouchEvent(MotionEvent event) {
+//        boolean needInterrupt = false;
+//        switch (event.getAction()) {
+//            case MotionEvent.ACTION_DOWN:
+//                mSmoothScroller.stop();
+//                startX = event.getRawX();
+//                startY = event.getRawY();
+//                needInterrupt = false;
+//                break;
+//            case MotionEvent.ACTION_MOVE:
+//                float currY = event.getRawY();
+//                float currX = event.getRawX();
+//                float dX = currX - startX;
+//                float dY = currY - startY;
+//                if (!((IRefreshable) contentView).canPullDown() && !((IRefreshable) contentView).canPullUp()) {
+//                    //列表不在顶端且不在底端,不拦截
+//                    needInterrupt = false;
+//                } else {
+//                    if (((IRefreshable) contentView).canPullDown()) {
+//                        //列表在顶端
+//                        if (dY > 0) {
+//                            System.out.println("1");
+//                            //向下滑动,需要拦截
+//                            needInterrupt = true;
+//                            if (headerRefreshState == RefreshState.ORIGIN_STATE || headerRefreshState == RefreshState.CAN_REFRESH) {
+//                                //如果处于下拉刷新或松手刷新状态,下拉距离越大,阻力越大
+//                                double scaleDY = Math.pow(dY * dY, 1.3 / 4);
+////                        System.out.println("dy=" + dY + ", scaleY=" + scaleDY);
+//                                scrollBy(0, (int) (-scaleDY));
+//                            } else {
+//                                scrollBy(0, (int) (-dY));
+//                            }
+//                            if (headerRefreshState == RefreshState.ORIGIN_STATE && -getScrollY() > canRefreshDis) {
+//                                //达到松手刷新的条件,更改状态
+//                                setHeaderState(RefreshState.CAN_REFRESH);
+//                            }
+//                            if (headerRefreshState == RefreshState.CAN_REFRESH && -getScrollY() < canRefreshDis) {
+//                                //达到还原的条件,还原状态
+//                                setHeaderState(RefreshState.ORIGIN_STATE);
+//                            }
+//                        } else {
+//                            System.out.println("2");
+//                            //上滑
+//                            needInterrupt = true;
+//                            if (-getScrollY() > 0) {
+//                                //header显示了的话,需要拦截,不需要阻力
+//                                needInterrupt = true;
+//                                scrollBy(0, (int) (-dY));
+//                            } else {
+//                                //header没有显示,不需要拦截
+//                                needInterrupt = false;
+//                            }
+//                        }
+//                    } else if (((IRefreshable) contentView).canPullUp()) {
+//                        //列表在底端
+//                        if (dY > 0) {
+//                            System.out.println("3");
+//                            //下滑
+//                            needInterrupt = true;
+//                            if (-getScrollY() > 0) {
+//                                //header显示了的话,需要拦截,不需要阻力
+//                                needInterrupt = true;
+//                                scrollBy(0, (int) (-dY));
+//                            } else {
+//                                //header没有显示,不需要拦截
+//                                needInterrupt = false;
+//                            }
+//                        } else {
+//                            System.out.println("4");
+//                            //向上滑动,需要拦截
+//                            needInterrupt = true;
+//                            if (footerRefreshState == RefreshState.ORIGIN_STATE || footerRefreshState == RefreshState.CAN_REFRESH) {
+//                                //如果处于下拉刷新或松手刷新状态,下拉距离越大,阻力越大
+//                                double scaleDY = Math.pow(dY * dY, 1.3 / 4);
+////                        System.out.println("dy=" + dY + ", scaleY=" + scaleDY);
+//                                scrollBy(0, (int) (scaleDY));
+//                            } else {
+//                                scrollBy(0, (int) (dY));
+//                            }
+//                            System.out.println("getScrollY=" + getScrollY());
+//                            if (footerRefreshState == RefreshState.ORIGIN_STATE && getScrollY() > canRefreshDis) {
+//                                //达到松手刷新的条件,更改状态
+//                                setFooterState(RefreshState.CAN_REFRESH);
+//                            }
+//                            if (footerRefreshState == RefreshState.CAN_REFRESH && getScrollY() < canRefreshDis) {
+//                                //达到还原的条件,还原状态
+//                                setFooterState(RefreshState.ORIGIN_STATE);
+//                            }
+//                        }
+//                    }
+//                }
+//                startY = currY;
+//                break;
+//            case MotionEvent.ACTION_UP:
+//                //如果处于正在刷新,且下滑距离超过下拉条件,更改状态,需要回滚到正在刷新的标准距离
+//                if (headerRefreshState == RefreshState.CAN_REFRESH && -getScrollY() > canRefreshDis) {
+//                    setHeaderState(RefreshState.REFRESHING);
+//                    if (mOnRefreshListener != null) {
+//                        mOnRefreshListener.onHeaderRefresh();
+//                    }
+//                    System.out.println("11");
+//                    mSmoothScroller.smoothScrollTo(0, -headerHeight, 0, null);
+//                } else if (footerRefreshState == RefreshState.CAN_REFRESH && getScrollY() > canRefreshDis) {
+//                    setFooterState(RefreshState.REFRESHING);
+//                    if (mOnRefreshListener != null) {
+//                        mOnRefreshListener.onFooterRefresh();
+//                    }
+//                    System.out.println("12");
+//                    mSmoothScroller.smoothScrollTo(0, footerHeight, 0, null);
+//                } else if (getScrollY() != 0) {
+//                    //如果不是正在刷新且位置不正常,需要回滚到初始位置
+//                    System.out.println("13");
+//                    mSmoothScroller.smoothScrollTo(0, 0, 0, null);
+//                }
+//
+//
+//                break;
+//        }
+//        if (!needInterrupt) {
+//            super.dispatchTouchEvent(event);
+//        } else {
+//            event.setAction(MotionEvent.ACTION_CANCEL);
+//            super.dispatchTouchEvent(event);
+//        }
+////        System.out.println("needInterrupt=" + needInterrupt);
+//        return true;
+//    }
+
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         boolean needInterrupt = false;
@@ -448,87 +576,73 @@ public class RefreshableLayout extends RelativeLayout {
                 float currX = event.getRawX();
                 float dX = currX - startX;
                 float dY = currY - startY;
-                if (!((IRefreshable) contentView).canPullDown() && !((IRefreshable) contentView).canPullUp()) {
-                    //列表不在顶端且不在底端,不拦截
-                    needInterrupt = false;
+                if (getScrollY() != 0) {
+                    needInterrupt = true;
+                    if (-getScrollY() > 0) {
+                        //header显示
+                        System.out.println("1" + ",dy=" + dY);
+                        if (headerRefreshState == RefreshState.ORIGIN_STATE || headerRefreshState == RefreshState.CAN_REFRESH || (headerRefreshState == RefreshState.REFRESHING && -getScrollY() > headerHeight)) {
+                            //如果处于下拉刷新或松手刷新状态,下拉距离越大,阻力越大
+                            dY = (float) (Math.pow(dY * dY, 1.3 / 4) * dY / Math.abs(dY));
+                        }
+                        if (headerRefreshState == RefreshState.REFRESHING && (getScrollY() + dY) > 0) {
+                            scrollTo(0, 0);
+                        } else if (footerRefreshState == RefreshState.REFRESHING && (getScrollY() + dY < 0)) {
+                            scrollTo(0, 0);
+                        } else {
+                            scrollBy(0, (int) (-dY));
+                        }
+                        if (headerRefreshState == RefreshState.ORIGIN_STATE && -getScrollY() > canRefreshDis) {
+                            //达到松手刷新的条件,更改状态
+                            setHeaderState(RefreshState.CAN_REFRESH);
+                        }
+                        if (headerRefreshState == RefreshState.CAN_REFRESH && -getScrollY() < canRefreshDis) {
+                            //达到还原的条件,还原状态
+                            setHeaderState(RefreshState.ORIGIN_STATE);
+                        }
+                    } else if (-getScrollY() < 0) {
+                        //footer显示
+                        System.out.println("2" + ",dy=" + dY);
+                        if (footerRefreshState == RefreshState.ORIGIN_STATE || footerRefreshState == RefreshState.CAN_REFRESH || (footerRefreshState == RefreshState.REFRESHING && getScrollY() > footerHeight)) {
+                            //如果处于下拉刷新或松手刷新状态,下拉距离越大,阻力越大
+                            dY = (float) (Math.pow(dY * dY, 1.3 / 4) * dY / Math.abs(dY));
+                        }
+                        if (headerRefreshState == RefreshState.REFRESHING && (getScrollY() + dY) > 0) {
+                            scrollTo(0, 0);
+                        } else if (footerRefreshState == RefreshState.REFRESHING && (getScrollY() + dY < 0)) {
+                            scrollTo(0, 0);
+                        } else {
+                            scrollBy(0, (int) (-dY));
+                        }
+
+                        if (footerRefreshState == RefreshState.ORIGIN_STATE && getScrollY() > canRefreshDis) {
+                            //达到松手刷新的条件,更改状态
+                            setFooterState(RefreshState.CAN_REFRESH);
+                        }
+                        if (footerRefreshState == RefreshState.CAN_REFRESH && getScrollY() < canRefreshDis) {
+                            //达到还原的条件,还原状态
+                            setFooterState(RefreshState.ORIGIN_STATE);
+                        }
+                    }
                 } else {
-                    if (((IRefreshable) contentView).canPullDown()) {
-                        //列表在顶端
-                        if (dY > 0) {
-                            System.out.println("1");
-                            //向下滑动,需要拦截
-                            needInterrupt = true;
-                            if (headerRefreshState == RefreshState.ORIGIN_STATE || headerRefreshState == RefreshState.CAN_REFRESH) {
-                                //如果处于下拉刷新或松手刷新状态,下拉距离越大,阻力越大
-                                double scaleDY = Math.pow(dY * dY, 1.3 / 4);
-//                        System.out.println("dy=" + dY + ", scaleY=" + scaleDY);
-                                scrollBy(0, (int) (-scaleDY));
-                            } else {
-                                scrollBy(0, (int) (-dY));
-                            }
-                            if (headerRefreshState == RefreshState.ORIGIN_STATE && -getScrollY() > canRefreshDis) {
-                                //达到松手刷新的条件,更改状态
-                                setHeaderState(RefreshState.CAN_REFRESH);
-                            }
-                            if (headerRefreshState == RefreshState.CAN_REFRESH && -getScrollY() < canRefreshDis) {
-                                //达到还原的条件,还原状态
-                                setHeaderState(RefreshState.ORIGIN_STATE);
-                            }
-                        } else {
-                            System.out.println("2");
-                            //上滑
-                            needInterrupt = true;
-                            if (-getScrollY() > 0) {
-                                //header显示了的话,需要拦截,不需要阻力
-                                needInterrupt = true;
-                                scrollBy(0, (int) (-dY));
-                            } else {
-                                //header没有显示,不需要拦截
-                                needInterrupt = false;
-                            }
-                        }
-                    } else if (((IRefreshable) contentView).canPullUp()) {
-                        //列表在底端
-                        if (dY > 0) {
-                            System.out.println("3");
-                            //下滑
-                            needInterrupt = true;
-                            if (-getScrollY() > 0) {
-                                //header显示了的话,需要拦截,不需要阻力
-                                needInterrupt = true;
-                                scrollBy(0, (int) (-dY));
-                            } else {
-                                //header没有显示,不需要拦截
-                                needInterrupt = false;
-                            }
-                        } else {
-                            System.out.println("4");
-                            //向上滑动,需要拦截
-                            needInterrupt = true;
-                            if (footerRefreshState == RefreshState.ORIGIN_STATE || footerRefreshState == RefreshState.CAN_REFRESH) {
-                                //如果处于下拉刷新或松手刷新状态,下拉距离越大,阻力越大
-                                double scaleDY = Math.pow(dY * dY, 1.3 / 4);
-//                        System.out.println("dy=" + dY + ", scaleY=" + scaleDY);
-                                scrollBy(0, (int) (scaleDY));
-                            } else {
-                                scrollBy(0, (int) (dY));
-                            }
-                            System.out.println("getScrollY=" + getScrollY());
-                            if (footerRefreshState == RefreshState.ORIGIN_STATE && getScrollY() > canRefreshDis) {
-                                //达到松手刷新的条件,更改状态
-                                setFooterState(RefreshState.CAN_REFRESH);
-                            }
-                            if (footerRefreshState == RefreshState.CAN_REFRESH && getScrollY() < canRefreshDis) {
-                                //达到还原的条件,还原状态
-                                setFooterState(RefreshState.ORIGIN_STATE);
-                            }
-                        }
+                    //都不显示
+                    if (((IRefreshable) contentView).canPullDown() && dY > 0 && footerRefreshState != RefreshState.REFRESHING) {
+                        System.out.println("3" + ",dy=" + dY);
+                        needInterrupt = true;
+                        scrollBy(0, (int) (-dY));
+                    } else if (((IRefreshable) contentView).canPullUp() && dY < 0 && headerRefreshState != RefreshState.REFRESHING) {
+                        System.out.println("4" + ",dy=" + dY);
+                        needInterrupt = true;
+                        scrollBy(0, (int) (-dY));
+                    } else {
+                        System.out.println("5" + ",dy=" + dY);
+                        needInterrupt = false;
                     }
                 }
                 startY = currY;
                 break;
             case MotionEvent.ACTION_UP:
-                //如果处于正在刷新,且下滑距离超过下拉条件,更改状态,需要回滚到正在刷新的标准距离
+                //如果处于初始状态,且下滑距离超过下拉条件,更改状态,需要回滚到正在刷新的标准距离
                 if (headerRefreshState == RefreshState.CAN_REFRESH && -getScrollY() > canRefreshDis) {
                     setHeaderState(RefreshState.REFRESHING);
                     if (mOnRefreshListener != null) {
@@ -543,9 +657,19 @@ public class RefreshableLayout extends RelativeLayout {
                     }
                     System.out.println("12");
                     mSmoothScroller.smoothScrollTo(0, footerHeight, 0, null);
+                } else if (headerRefreshState == RefreshState.REFRESHING) {
+                    if (-getScrollY() > headerHeight) {
+                        System.out.println("13");
+                        mSmoothScroller.smoothScrollTo(0, -headerHeight, 0, null);
+                    }
+                } else if (footerRefreshState == RefreshState.REFRESHING) {
+                    if (getScrollY() > footerHeight) {
+                        System.out.println("14");
+                        mSmoothScroller.smoothScrollTo(0, footerHeight, 0, null);
+                    }
                 } else if (getScrollY() != 0) {
+                    System.out.println("15");
                     //如果不是正在刷新且位置不正常,需要回滚到初始位置
-                    System.out.println("13");
                     mSmoothScroller.smoothScrollTo(0, 0, 0, null);
                 }
 
@@ -561,6 +685,7 @@ public class RefreshableLayout extends RelativeLayout {
 //        System.out.println("needInterrupt=" + needInterrupt);
         return true;
     }
+
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {

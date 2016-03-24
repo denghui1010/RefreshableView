@@ -55,4 +55,9 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
+
+    public void textView(View view) {
+        Intent intent = new Intent(this, TextViewActivity.class);
+        startActivity(intent);
+    }
 }

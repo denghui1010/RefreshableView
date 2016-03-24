@@ -33,7 +33,7 @@ public class RefreshableListView extends ListView implements IRefreshable {
         if (clampedY) {
             if(mOnOverScrollListener!= null) {
                 mOnOverScrollListener.onOverScroll(mDeltaX, mDeltaY);
-//                System.out.println("边界回弹:开始");
+                System.out.println("边界回弹:开始");
             }
         }
     }

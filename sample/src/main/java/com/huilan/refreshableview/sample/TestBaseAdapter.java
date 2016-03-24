@@ -1,5 +1,6 @@
 package com.huilan.refreshableview.sample;
 
+import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -38,13 +39,15 @@ public class TestBaseAdapter extends BaseAdapter {
         TextView tv;
         if (convertView == null) {
             tv = new TextView(parent.getContext());
+            tv.setClickable(false);
+            tv.setFocusable(false);
+            tv.setTextSize(25);
+            tv.setTextColor(Color.DKGRAY);
+            tv.setPadding(50, 10, 10, 50);
         } else {
             tv = (TextView) convertView;
         }
-        tv.setClickable(false);
-        tv.setFocusable(false);
-        tv.setTextSize(25);
-        tv.setPadding(10, 10, 10, 10);
+
         tv.setText(mLinkedList.get(position));
         return tv;
     }

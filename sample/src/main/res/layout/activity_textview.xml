@@ -1,0 +1,17 @@
+<com.huilan.refreshableview.RefreshableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/refresh_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#333333">
+
+    <com.huilan.refreshableview.weight.RefreshableTextView
+        android:id="@+id/content_view"
+        android:background="#ffffff"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="这是一个match_parent的TextView"
+        android:textSize="40sp"
+        android:textStyle="bold" />
+
+</com.huilan.refreshableview.RefreshableLayout>

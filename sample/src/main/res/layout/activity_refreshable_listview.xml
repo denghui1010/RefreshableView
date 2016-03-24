@@ -5,7 +5,7 @@
     tools:context=".Pull2RefreshActivity">
 
     <com.huilan.refreshableview.RefreshableLayout
-        android:background="#131313"
+        android:background="#2d2d2d"
         android:id="@+id/rl_rl"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
