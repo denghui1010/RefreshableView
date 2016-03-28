@@ -1,8 +1,8 @@
 package com.huilan.refreshableview.sample;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 
-public class ExpandableListActivity extends Activity implements RefreshableLayout.OnRefreshListener {
+public class ExpandableListActivity extends AppCompatActivity implements RefreshableLayout.OnRefreshListener {
     private int count = 0;
     private LinkedList<String> mGroups;
     private Myadapter mMyadapter;

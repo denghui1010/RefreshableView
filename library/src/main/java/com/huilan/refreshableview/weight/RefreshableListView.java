@@ -33,7 +33,6 @@ public class RefreshableListView extends ListView implements IRefreshable {
         if (clampedY) {
             if(mOnOverScrollListener!= null) {
                 mOnOverScrollListener.onOverScroll(mDeltaX, mDeltaY);
-                System.out.println("边界回弹:开始");
             }
         }
     }
@@ -51,8 +50,9 @@ public class RefreshableListView extends ListView implements IRefreshable {
         if (getCount() == 0) {
             // 没有item的时候也可以下拉刷新
             return true;
-        } else // 滑到ListView的顶部了
+        } else { // 滑到ListView的顶部了
             return getFirstVisiblePosition() == 0 && getChildAt(0).getTop() >= 0;
+        }
     }
 
     @Override
@@ -62,8 +62,9 @@ public class RefreshableListView extends ListView implements IRefreshable {
             return true;
         } else if (getLastVisiblePosition() == (getCount() - 1)) {
             // 滑到底部了
-            if (getChildAt(getLastVisiblePosition() - getFirstVisiblePosition()) != null && getChildAt(getLastVisiblePosition() - getFirstVisiblePosition()).getBottom() <= getMeasuredHeight())
+            if (getChildAt(getLastVisiblePosition() - getFirstVisiblePosition()) != null && getChildAt(getLastVisiblePosition() - getFirstVisiblePosition()).getBottom() <= getMeasuredHeight()) {
                 return true;
+            }
         }
         return false;
     }

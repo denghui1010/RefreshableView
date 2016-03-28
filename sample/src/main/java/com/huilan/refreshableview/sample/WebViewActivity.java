@@ -1,7 +1,7 @@
 package com.huilan.refreshableview.sample;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -13,7 +13,7 @@ import com.huilan.refreshableview.weight.RefreshableWebView;
 /**
  * Created by liudenghui on 14-8-29.
  */
-public class WebViewActivity extends Activity implements RefreshableLayout.OnRefreshListener {
+public class WebViewActivity extends AppCompatActivity implements RefreshableLayout.OnRefreshListener {
     private WebViewClient mClient;
     private RefreshableWebView mRefreshableWebView;
     private WebView mWebView;

@@ -16,6 +16,7 @@ android {
         versionName "1.0.0-SNAPSHOT"
     }
 }
+
 /*
  *生成javadoc 打包javadoc.jar 打包source.jar 上传所有
  */
@@ -30,11 +31,24 @@ uploadArchives {
     }
 }
 
-task sourcesJar(type: Jar) {
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    destinationDir = file("javadoc/")
+    failOnError false
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    classifier = 'javadoc'
+    from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
     classifier = 'sources'
-    from android.sourceSets.main.java.srcDirs
+    from 'src/main/java'
 }
 
 artifacts {
-    archives sourcesJar
+    archives androidSourcesJar
+    archives androidJavadocsJar
 }

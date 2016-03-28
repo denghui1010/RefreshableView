@@ -1,8 +1,7 @@
 package com.huilan.refreshableview.sample;
 
-import android.app.Activity;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -13,27 +12,19 @@ import com.huilan.refreshableview.weight.RefreshableScrollView;
 import java.util.ArrayList;
 
 /**
+ * ScrollView测试
  * Created by liudenghui on 14-8-29.
  */
-public class ScrollViewActivity extends Activity implements RefreshableLayout.OnRefreshListener {
+public class ScrollViewActivity extends AppCompatActivity implements RefreshableLayout.OnRefreshListener {
     private LinearLayout mLinearLayout;
     private RefreshableScrollView mScrollView;
     private ArrayList<TextView> mTextViews;
     private RefreshableLayout mRefreshableLayout;
 
     public void onHeaderRefresh() {
-        new AsyncTask<Void, Void, Void>() {
+        mScrollView.postDelayed(new Runnable() {
             @Override
-            protected Void doInBackground(Void... params) {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-
-            protected void onPostExecute(Void result) {
+            public void run() {
                 for (int i = 0; i < 5; i++) {
                     TextView textView = new TextView(ScrollViewActivity.this);
                     textView.setTextSize(25.0F);
@@ -42,7 +33,7 @@ public class ScrollViewActivity extends Activity implements RefreshableLayout.On
                 }
                 mRefreshableLayout.notifyHeaderRefreshFinished(new RefreshResult(true, "刷新成功"));
             }
-        }.execute();
+        }, 3000);
     }
 
     @Override
@@ -55,7 +46,6 @@ public class ScrollViewActivity extends Activity implements RefreshableLayout.On
         setContentView(R.layout.activity_scrollview);
         initData();
         init();
-//        mRefreshableLayout.notifyHeaderRefreshStarted();
     }
 
     private void init() {
@@ -64,6 +54,7 @@ public class ScrollViewActivity extends Activity implements RefreshableLayout.On
         mRefreshableLayout.setOnRefreshListener(this);
         mScrollView.addView(mLinearLayout);
         mRefreshableLayout.setHeaderEnable();
+        mRefreshableLayout.setContentViewShadowEnable(true, false);
     }
 
     private void initData() {

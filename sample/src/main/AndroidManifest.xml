@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.huilan.refreshableview.sample" >
+    package="com.huilan.refreshableview.sample">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -8,10 +8,10 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme.NoActionBar">
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -25,7 +25,7 @@
         <activity android:name=".ScrollViewActivity" />
         <activity android:name=".ImagePagerActivity" />
         <activity android:name=".ViewPagerPull2RActivity" />
-        <activity android:name=".TextViewActivity"/>
+        <activity android:name=".TextViewActivity" />
     </application>
 
 </manifest>

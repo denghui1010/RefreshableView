@@ -11,6 +11,7 @@
         android:layout_height="match_parent">
 
         <com.huilan.refreshableview.weight.RefreshableScrollView
+            android:background="#ffffff"
             android:id="@+id/scrollview"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

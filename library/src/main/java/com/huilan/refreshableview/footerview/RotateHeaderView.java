@@ -44,7 +44,7 @@ public class RotateHeaderView extends CustomView {
 
     @Override
     public void onStart() {
-        header_text_1.setText("松开刷新");
+        header_text_1.setText("松开加载");
     }
 
     @Override
@@ -54,7 +54,7 @@ public class RotateHeaderView extends CustomView {
 
     @Override
     public void onPrepare() {
-        header_text_1.setText("上拉刷新");
+        header_text_1.setText("上拉加载");
     }
 
     @Override
@@ -65,7 +65,7 @@ public class RotateHeaderView extends CustomView {
 
     @Override
     public void onRefreshing() {
-        header_text_1.setText("正在刷新");
+        header_text_1.setText("正在加载");
         mPullAnimation.start();
     }
 

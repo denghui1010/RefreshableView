@@ -2,7 +2,7 @@
     android:id="@+id/refresh_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#333333">
+    android:background="#383838">
 
     <com.huilan.refreshableview.weight.RefreshableTextView
         android:id="@+id/content_view"

@@ -1,14 +1,14 @@
 package com.huilan.refreshableview.sample;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 /**
  * Created by liudenghui on 14-8-8.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     public void auto_load(View view) {
         Intent intent = new Intent(this, AutoLoadActivity.class);

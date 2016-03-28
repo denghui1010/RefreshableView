@@ -1,6 +1,6 @@
 package com.huilan.refreshableview.sample;
 
-import android.graphics.Color;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -13,15 +13,15 @@ import java.util.ArrayList;
  * Created by Liu Denghui on 16/3/23.
  */
 public class TestBaseAdapter extends BaseAdapter {
-    public ArrayList<String> mLinkedList;
+    public ArrayList<String> mList;
 
-    public TestBaseAdapter(ArrayList<String> linkedList) {
-        mLinkedList = linkedList;
+    public TestBaseAdapter(ArrayList<String> list) {
+        mList = list;
     }
 
     @Override
     public int getCount() {
-        return mLinkedList.size();
+        return mList.size();
     }
 
     @Override
@@ -36,19 +36,22 @@ public class TestBaseAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        TextView tv;
+        MyHolder holder;
         if (convertView == null) {
-            tv = new TextView(parent.getContext());
-            tv.setClickable(false);
-            tv.setFocusable(false);
-            tv.setTextSize(25);
-            tv.setTextColor(Color.DKGRAY);
-            tv.setPadding(50, 10, 10, 50);
+            convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
+            TextView text = (TextView) convertView.findViewById(R.id.item_text);
+            holder = new MyHolder();
+            holder.text = text;
+            convertView.setTag(holder);
         } else {
-            tv = (TextView) convertView;
+            holder = (MyHolder) convertView.getTag();
         }
+        holder.text.setText(mList.get(position));
+        return convertView;
+    }
 
-        tv.setText(mLinkedList.get(position));
-        return tv;
+    private class MyHolder {
+        public TextView text;
+
     }
 }

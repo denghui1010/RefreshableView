@@ -33,7 +33,7 @@ public class TestOnRefreshListener implements RefreshableLayout.OnRefreshListene
                 Random random = new Random();
                 int temp = random.nextInt(5) + 1;
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -58,7 +58,7 @@ public class TestOnRefreshListener implements RefreshableLayout.OnRefreshListene
             @Override
             protected Void doInBackground(Void... params) {
                 Random random = new Random();
-                int temp = random.nextInt(5) + 10;
+                int temp = random.nextInt(2);
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
@@ -73,7 +73,7 @@ public class TestOnRefreshListener implements RefreshableLayout.OnRefreshListene
 
             @Override
             protected void onPostExecute(Void result) {
-                mRefreshableLayout.notifyFooterRefreshFinished(new RefreshResult(true, "刷新成功"));
+                mRefreshableLayout.notifyFooterRefreshFinished(new RefreshResult(true, "刷新成功"),10000);
                 mBaseAdapter.notifyDataSetChanged();
             }
         }.execute();

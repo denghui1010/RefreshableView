@@ -1,7 +1,7 @@
 package com.huilan.refreshableview.sample;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import com.huilan.refreshableview.RefreshableLayout;
 import com.huilan.refreshableview.weight.RefreshableListView;
@@ -9,7 +9,7 @@ import com.huilan.refreshableview.weight.RefreshableListView;
 import java.util.ArrayList;
 
 
-public class AutoLoadActivity extends Activity {
+public class AutoLoadActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

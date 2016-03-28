@@ -2,60 +2,64 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center">
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <com.huilan.refreshableview.ShadowView
+        android:layout_width="match_parent"
+        android:layout_height="200dp" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="下拉刷新"
-        android:onClick="pull_refresh"/>
+        android:onClick="pull_refresh"
+        android:text="下拉刷新" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="自动加载"
-        android:onClick="auto_load"/>
+        android:onClick="auto_load"
+        android:text="自动加载" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="点击加载"
-        android:onClick="click_load"/>
+        android:onClick="click_load"
+        android:text="点击加载" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="scrollview"
-        android:onClick="scrollview"/>
+        android:onClick="scrollview"
+        android:text="scrollview" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="expandlistview"
-        android:onClick="expandlistview"/>
+        android:onClick="expandlistview"
+        android:text="expandlistview" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="webview"
-        android:onClick="webview"/>
+        android:onClick="webview"
+        android:text="webview" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="imagepager"
-        android:onClick="imagepager"/>
+        android:onClick="imagepager"
+        android:text="imagepager" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="test in viewpager"
-        android:onClick="viewpager"/>
+        android:onClick="viewpager"
+        android:text="test in viewpager" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
-        android:onClick="textView"/>
+        android:onClick="textView"
+        android:text="TextView" />
 </LinearLayout>

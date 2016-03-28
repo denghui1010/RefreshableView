@@ -1,7 +1,7 @@
 package com.huilan.refreshableview.sample;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import com.huilan.refreshableview.RefreshableLayout;
 import com.huilan.refreshableview.weight.RefreshableListView;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /**
  * Created by liudenghui on 14-8-8.
  */
-public class Click2LoadActivity extends Activity {
+public class Click2LoadActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

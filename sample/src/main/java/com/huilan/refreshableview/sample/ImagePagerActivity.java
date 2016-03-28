@@ -1,7 +1,7 @@
 package com.huilan.refreshableview.sample;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 /**
  * Created by liudenghui on 14-9-3.
  */
-public class ImagePagerActivity extends Activity implements RefreshableLayout.OnRefreshListener {
+public class ImagePagerActivity extends AppCompatActivity implements RefreshableLayout.OnRefreshListener {
 
     private ImagePager mImagePager;
     private RefreshableListView mListView;
