@@ -5,5 +5,7 @@
     <item name="refreshablegridview" type="id">false</item>
     <item name="refreshablescrollview" type="id">false</item>
     <item name="refreshablewebview" type="id">false</item>
+    <item name="smoothscroll_x" type="id">false</item>
+    <item name="smoothscroll_y" type="id">false</item>
 
 </resources>

@@ -108,8 +108,12 @@ class SmoothScroller {
         mScrollX.setIntValues(mView.getScrollX(), x);
         mScrollY.setIntValues(mView.getScrollY(), y);
         mObjectAnimator.setDuration(duration);
-        mObjectAnimator.setStartDelay(delayMillis);
-        mObjectAnimator.start();
+        mView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mObjectAnimator.start();
+            }
+        }, delayMillis);
         isRunning = true;
     }
 
@@ -133,10 +137,11 @@ class SmoothScroller {
      */
     public interface OnSmoothScrollListener {
         void onSmoothScrollFinished();
+
         void onSmoothScrollStart();
     }
 
-    public class onSmoothScrollListenerAdapter implements OnSmoothScrollListener{
+    public class onSmoothScrollListenerAdapter implements OnSmoothScrollListener {
 
         @Override
         public void onSmoothScrollFinished() {
