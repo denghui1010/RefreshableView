@@ -6,15 +6,19 @@ import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
-
-import java.util.UUID;
+import android.view.animation.Interpolator;
 
 /**
  * 平滑滚动基类
  * Created by liudenghui on 14-10-9.
  */
 class SmoothScroller2 {
-    
+    private View mView;
+    private PropertyValuesHolder mScrollX;
+    private PropertyValuesHolder mScrollY;
+    private ObjectAnimator mObjectAnimator;
+    private OnSmoothScrollListener mOnSmoothScrollListener;
+    private boolean isRunning;
 
     /**
      * 平滑滚动器
@@ -23,7 +27,47 @@ class SmoothScroller2 {
      */
     public SmoothScroller2(View view) {
         mView = view;
+        mScrollX = PropertyValuesHolder.ofInt("scrollX", mView.getScrollX());
+        mScrollY = PropertyValuesHolder.ofInt("scrollY", mView.getScrollY());
+        mObjectAnimator = ObjectAnimator.ofPropertyValuesHolder(mView, mScrollX, mScrollY);
+        Interpolator interpolator = new DecelerateInterpolator();
+        mObjectAnimator.setInterpolator(interpolator);
+        mObjectAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+//                System.out.println("开始动画");
+            }
 
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                isRunning = false;
+//                System.out.println("结束动画");
+                if (mOnSmoothScrollListener != null) {
+                    mOnSmoothScrollListener.onSmoothScrollFinished();
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                isRunning = false;
+//                System.out.println("取消动画");
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        mObjectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                Object scrollY = animation.getAnimatedValue("scrollY");
+                float animatedFraction = animation.getAnimatedFraction();
+                Object animatedValue = animation.getAnimatedValue();
+                long currentPlayTime = animation.getCurrentPlayTime();
+//                System.out.println("animatedFraction=" + animatedFraction + ",scrollY=" + scrollY + ",currentPlayTime=" + currentPlayTime + ",duration=" + animation.getDuration());
+            }
+        });
     }
 
     /**
@@ -54,13 +98,20 @@ class SmoothScroller2 {
      * @param listener    状态监听器
      */
     public void smoothScrollTo(int x, int y, int duration, long delayMillis, final OnSmoothScrollListener listener) {
+        if (isRunning) {
+            mObjectAnimator.cancel();
+            if (mOnSmoothScrollListener != null) {
+                mOnSmoothScrollListener.onSmoothScrollFinished();
+            }
+        }
         mOnSmoothScrollListener = listener;
-
+        mScrollX.setIntValues(mView.getScrollX(), x);
+        mScrollY.setIntValues(mView.getScrollY(), y);
+        mObjectAnimator.setDuration(duration);
         mView.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mObjectAnimator.cancel();
-//                mObjectAnimator.start();
+                mObjectAnimator.start();
             }
         }, delayMillis);
         isRunning = true;
@@ -85,97 +136,20 @@ class SmoothScroller2 {
      * Created by liudenghui on 14-10-9.
      */
     public interface OnSmoothScrollListener {
-        void onSmoothScrollEnd();
+        void onSmoothScrollFinished();
 
         void onSmoothScrollStart();
-
-        void onSmoothScrollCancel();
-
     }
 
-    public static abstract class onSmoothScrollListenerAdapter implements OnSmoothScrollListener {
+    public class onSmoothScrollListenerAdapter implements OnSmoothScrollListener {
 
         @Override
-        public void onSmoothScrollEnd() {
+        public void onSmoothScrollFinished() {
 
         }
 
         @Override
         public void onSmoothScrollStart() {
-
-        }
-
-        @Override
-        public void onSmoothScrollCancel() {
-
-        }
-    }
-
-    private class SmoothRunnable implements Runnable, Animator.AnimatorListener, ValueAnimator.AnimatorUpdateListener {
-        private final String TAG = UUID.randomUUID().toString();
-        private View mView;
-        private OnSmoothScrollListener mOnSmoothScrollListener;
-        private boolean isRunning;
-        private int mDuration;
-        private int mX;
-        private int mY;
-
-        public SmoothRunnable(View view, int x, int y, int duration, SmoothScroller2.OnSmoothScrollListener onSmoothScrollListener) {
-            mX = x;
-            mY = y;
-            mDuration = duration;
-            mView = view;
-            mOnSmoothScrollListener = onSmoothScrollListener;
-        }
-
-        @Override
-        public void run() {
-            PropertyValuesHolder scrollX = PropertyValuesHolder.ofInt("scrollX", mView.getScrollX(), mX);
-            PropertyValuesHolder scrollY = PropertyValuesHolder.ofInt("scrollY", mView.getScrollY(), mY);
-            ObjectAnimator objectAnimator = ObjectAnimator.ofPropertyValuesHolder(mView, scrollX, scrollY);
-            objectAnimator.setDuration(mDuration);
-            objectAnimator.setInterpolator(new DecelerateInterpolator());
-            objectAnimator.addListener(this);
-            objectAnimator.addUpdateListener(this);
-        }
-
-        @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
-            Object scrollY = animation.getAnimatedValue("scrollY");
-            float animatedFraction = animation.getAnimatedFraction();
-            Object animatedValue = animation.getAnimatedValue();
-            long currentPlayTime = animation.getCurrentPlayTime();
-//          System.out.println("animatedFraction=" + animatedFraction + ",scrollY=" + scrollY + ",currentPlayTime=" + currentPlayTime + ",mDuration=" + animation.getDuration());
-        }
-
-        @Override
-        public void onAnimationStart(Animator animation) {
-            System.out.println(TAG + "开始动画");
-            if (mOnSmoothScrollListener != null) {
-                mOnSmoothScrollListener.onSmoothScrollStart();
-            }
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            System.out.println(TAG + "结束动画");
-            isRunning = false;
-            if (mOnSmoothScrollListener != null) {
-                mOnSmoothScrollListener.onSmoothScrollEnd();
-            }
-        }
-
-        @Override
-        public void onAnimationCancel(Animator animation) {
-            System.out.println(TAG + "取消动画");
-            isRunning = false;
-            if (mOnSmoothScrollListener != null) {
-                mOnSmoothScrollListener.onSmoothScrollCancel();
-            }
-        }
-
-        @Override
-        public void onAnimationRepeat(Animator animation) {
 
         }
     }

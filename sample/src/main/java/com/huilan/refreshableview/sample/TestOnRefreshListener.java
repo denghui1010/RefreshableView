@@ -73,7 +73,7 @@ public class TestOnRefreshListener implements RefreshableLayout.OnRefreshListene
 
             @Override
             protected void onPostExecute(Void result) {
-                mRefreshableLayout.notifyFooterRefreshFinished(new RefreshResult(true, "刷新成功"),10000);
+                mRefreshableLayout.notifyFooterRefreshFinished(new RefreshResult(true, "刷新成功"),3000);
                 mBaseAdapter.notifyDataSetChanged();
             }
         }.execute();

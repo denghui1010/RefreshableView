@@ -82,7 +82,7 @@ public class RefreshableLayout extends RelativeLayout {
     /**
      * 平滑滚动器
      */
-    private SmoothScroller2 mSmoothScroller;
+    private SmoothScroller mSmoothScroller;
     /**
      * 顶部阴影View
      */
@@ -132,7 +132,7 @@ public class RefreshableLayout extends RelativeLayout {
     public void startHeaderRefresh() {
         if (headerRefreshMode != HeaderRefreshMode.CLOSE) {
             setHeaderState(RefreshState.REFRESHING);
-            mSmoothScroller.smoothScrollTo(0, -headerHeight, 500, new SmoothScroller2.onSmoothScrollListenerAdapter() {
+            mSmoothScroller.smoothScrollTo(this, 0, -headerHeight, 500, new SmoothScroller.onSmoothScrollListenerAdapter() {
                 @Override
                 public void onSmoothScrollEnd() {
                     if (mOnRefreshListener != null) {
@@ -197,7 +197,7 @@ public class RefreshableLayout extends RelativeLayout {
     }
 
     private void init() {
-        mSmoothScroller = new SmoothScroller2(this);
+        mSmoothScroller = new SmoothScroller();
     }
 
     /**
@@ -259,19 +259,20 @@ public class RefreshableLayout extends RelativeLayout {
     }
 
     /**
-     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,延迟一定时间后收起footerview,请将刷新适配器的方法写在监听中
+     * 通知上拉刷新已经完成,在你期望结束上拉刷新时需要调用此方法,延迟一定时间后收起footerView,延迟最低不会低于500ms
      *
      * @param result 刷新结果
      * @param millis 延迟毫秒值
      */
-    public void notifyFooterRefreshFinished(final RefreshResult result, final int millis) {
+    public void notifyFooterRefreshFinished(RefreshResult result, int millis) {
+        millis = Math.max(500, millis);
         if (footerRefreshMode == FooterRefreshMode.CLOSE) {
             return;
         }
         footerView.onFinished(result);
         setFooterState(RefreshState.FINISHED);
         //延迟一定时间收起footerView
-        mSmoothScroller.smoothScrollTo( 0, 0, millis, new SmoothScroller2.onSmoothScrollListenerAdapter() {
+        mSmoothScroller.smoothScrollTo(this, 0, 0, millis, new SmoothScroller.onSmoothScrollListenerAdapter() {
             @Override
             public void onSmoothScrollEnd() {
                 //滑动完毕后才还原状态
@@ -291,7 +292,7 @@ public class RefreshableLayout extends RelativeLayout {
     }
 
     /**
-     * 通知下拉刷新已经完成,在你期望结束下拉刷新时需要调用此方法,1秒后会隐藏headerview,请将刷新适配器的方法写在监听中
+     * 通知下拉刷新已经完成,在你期望结束下拉刷新时需要调用此方法,1秒后会隐藏headerView
      *
      * @param result 刷新结果
      */
@@ -300,19 +301,20 @@ public class RefreshableLayout extends RelativeLayout {
     }
 
     /**
-     * 通知下拉刷新已经完成,在你期望结束下拉刷新时需要调用此方法,延迟一定时间后收起headererview,请将刷新适配器的方法写在监听中
+     * 通知下拉刷新已经完成,在你期望结束下拉刷新时需要调用此方法,延迟一定时间后收起headerView,延迟最低不会低于500ms
      *
      * @param result 刷新结果
      * @param millis 延迟毫秒值
      */
-    public void notifyHeaderRefreshFinished(final RefreshResult result, final int millis) {
+    public void notifyHeaderRefreshFinished(RefreshResult result, int millis) {
+        millis = Math.max(500, millis);
         if (headerRefreshMode == HeaderRefreshMode.CLOSE) {
             return;
         }
         headerView.onFinished(result);
         setHeaderState(RefreshState.FINISHED);
         //回到原位
-        mSmoothScroller.smoothScrollTo(0, 0, millis, new SmoothScroller2.onSmoothScrollListenerAdapter() {
+        mSmoothScroller.smoothScrollTo(this, 0, 0, millis, new SmoothScroller.onSmoothScrollListenerAdapter() {
             @Override
             public void onSmoothScrollEnd() {
                 //滑动完毕后才还原状态
@@ -341,7 +343,7 @@ public class RefreshableLayout extends RelativeLayout {
             return;
         }
         setHeaderState(RefreshState.REFRESHING);
-        mSmoothScroller.smoothScrollTo(0, 0, millis, new SmoothScroller2.onSmoothScrollListenerAdapter() {
+        mSmoothScroller.smoothScrollTo(this, 0, 0, millis, new SmoothScroller.onSmoothScrollListenerAdapter() {
             @Override
             public void onSmoothScrollEnd() {
                 //延时到滑动进行完毕才进行真正的刷新回调
@@ -495,6 +497,7 @@ public class RefreshableLayout extends RelativeLayout {
         boolean needInterrupt = false;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                mSmoothScroller.cancel();
                 startX = event.getRawX();
                 startY = event.getRawY();
                 needInterrupt = false;
@@ -621,7 +624,7 @@ public class RefreshableLayout extends RelativeLayout {
                         mOnRefreshListener.onHeaderRefresh();
                     }
                     System.out.println("11");
-                    mSmoothScroller.smoothScrollTo(0, -headerHeight, 0, new SmoothScroller2.onSmoothScrollListenerAdapter() {
+                    mSmoothScroller.smoothScrollTo(this, 0, -headerHeight, 0, new SmoothScroller.onSmoothScrollListenerAdapter() {
                         @Override
                         public void onSmoothScrollStart() {
                             setHeaderState(RefreshState.REFRESHING);
@@ -635,7 +638,7 @@ public class RefreshableLayout extends RelativeLayout {
                         mOnRefreshListener.onFooterRefresh();
                     }
                     System.out.println("12");
-                    mSmoothScroller.smoothScrollTo(0, footerHeight, 0, new SmoothScroller2.onSmoothScrollListenerAdapter() {
+                    mSmoothScroller.smoothScrollTo(this, 0, footerHeight, 0, new SmoothScroller.onSmoothScrollListenerAdapter() {
                         @Override
                         public void onSmoothScrollStart() {
                             setFooterState(RefreshState.REFRESHING);
@@ -646,19 +649,19 @@ public class RefreshableLayout extends RelativeLayout {
                 if (headerRefreshState == RefreshState.REFRESHING) {
                     //如果Header正在刷新,回滚到显示HeaderView的位置
                     System.out.println("13");
-                    mSmoothScroller.smoothScrollTo(0, -headerHeight, 0, null);
+                    mSmoothScroller.smoothScrollTo(this, 0, -headerHeight, 0, null);
                     break;
                 }
                 if (footerRefreshState == RefreshState.REFRESHING) {
                     //如果Footer正在刷新,回滚到显示FooterView的位置
                     System.out.println("14");
-                    mSmoothScroller.smoothScrollTo(0, footerHeight, 0, null);
+                    mSmoothScroller.smoothScrollTo(this, 0, footerHeight, 0, null);
                     break;
                 }
                 if (getScrollY() != 0) {
                     System.out.println("15");
                     //如果不是正在刷新且位置不正常,需要回滚到初始位置
-                    mSmoothScroller.smoothScrollTo(0, 0, 0, null);
+                    mSmoothScroller.smoothScrollTo(this, 0, 0, 0, null);
                     break;
                 }
                 break;
@@ -781,7 +784,7 @@ public class RefreshableLayout extends RelativeLayout {
                 if (footerRefreshState == RefreshState.REFRESHING || headerRefreshState == RefreshState.REFRESHING) {
                     dy = dy + getScrollY();
                 }
-                mSmoothScroller.smoothScrollTo(0, dy, duration, 0, new SmoothScroller2.onSmoothScrollListenerAdapter() {
+                mSmoothScroller.smoothScrollTo(RefreshableLayout.this, 0, dy, duration, 0, new SmoothScroller.onSmoothScrollListenerAdapter() {
                     @Override
                     public void onSmoothScrollEnd() {
                         int y = 0;
@@ -790,7 +793,7 @@ public class RefreshableLayout extends RelativeLayout {
                         } else if (footerRefreshState == RefreshState.REFRESHING) {
                             y = footerHeight;
                         }
-                        mSmoothScroller.smoothScrollTo(0, y, duration, 0, null);
+                        mSmoothScroller.smoothScrollTo(RefreshableLayout.this, 0, y, duration, 0, null);
                     }
                 });
             } else {
@@ -801,7 +804,7 @@ public class RefreshableLayout extends RelativeLayout {
                 if (footerRefreshState == RefreshState.REFRESHING || headerRefreshState == RefreshState.REFRESHING) {
                     dy = dy + getScrollY();
                 }
-                mSmoothScroller.smoothScrollTo(0, dy, duration, 0, new SmoothScroller2.onSmoothScrollListenerAdapter() {
+                mSmoothScroller.smoothScrollTo(RefreshableLayout.this, 0, dy, duration, 0, new SmoothScroller.onSmoothScrollListenerAdapter() {
                     @Override
                     public void onSmoothScrollEnd() {
                         int y = 0;
@@ -810,7 +813,7 @@ public class RefreshableLayout extends RelativeLayout {
                         } else if (headerRefreshState == RefreshState.REFRESHING) {
                             y = -headerHeight;
                         }
-                        mSmoothScroller.smoothScrollTo(0, y, duration, 0, null);
+                        mSmoothScroller.smoothScrollTo(RefreshableLayout.this, 0, y, duration, 0, null);
                     }
                 });
             }

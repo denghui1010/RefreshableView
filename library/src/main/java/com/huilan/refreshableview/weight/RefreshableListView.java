@@ -2,9 +2,6 @@ package com.huilan.refreshableview.weight;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.SoundEffectConstants;
-import android.view.View;
-import android.view.accessibility.AccessibilityEvent;
 import android.widget.ListView;
 
 /**
@@ -69,22 +66,22 @@ public class RefreshableListView extends ListView implements IRefreshable {
         return false;
     }
 
-    @Override
-    public boolean performItemClick(final View view, final int position, final long id) {
-        final OnItemClickListener onItemClickListener = getOnItemClickListener();
-        if (onItemClickListener != null) {
-            playSoundEffect(SoundEffectConstants.CLICK);
-            postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    onItemClickListener.onItemClick(RefreshableListView.this, view, position, id);
-                }
-            }, 150);
-            if (view != null) {
-                view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_CLICKED);
-            }
-            return true;
-        }
-        return false;
-    }
+//    @Override
+//    public boolean performItemClick(final View view, final int position, final long id) {
+//        final OnItemClickListener onItemClickListener = getOnItemClickListener();
+//        if (onItemClickListener != null) {
+//            playSoundEffect(SoundEffectConstants.CLICK);
+//            postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    onItemClickListener.onItemClick(RefreshableListView.this, view, position, id);
+//                }
+//            }, 150);
+//            if (view != null) {
+//                view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_CLICKED);
+//            }
+//            return true;
+//        }
+//        return false;
+//    }
 }
