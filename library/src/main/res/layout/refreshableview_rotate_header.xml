@@ -12,12 +12,13 @@
         android:layout_toStartOf="@+id/header_center_layout">
 
         <ImageView
+            android:scaleType="centerInside"
             android:id="@+id/header_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
             android:layout_centerInParent="true"
             android:contentDescription="@null"
-            android:src="@drawable/refreshableview_refresh" />
+            android:background="@drawable/refreshable_view_refresh" />
     </RelativeLayout>
 
     <LinearLayout

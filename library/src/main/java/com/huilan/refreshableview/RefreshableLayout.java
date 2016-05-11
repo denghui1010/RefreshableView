@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.OverScroller;
 import android.widget.RelativeLayout;
 
 import com.huilan.refreshableview.footerview.AutoLoadFooterView;
@@ -93,6 +94,7 @@ public class RefreshableLayout extends RelativeLayout {
     private ShadowView mBottomShadowView;
 
     private boolean mAutoRefresh;
+    private OverScroller mOverScroller;
 
     public RefreshableLayout(Context context) {
         super(context);
@@ -198,6 +200,7 @@ public class RefreshableLayout extends RelativeLayout {
 
     private void init() {
         mSmoothScroller = new SmoothScroller();
+        mOverScroller = new OverScroller(getContext(), null);
     }
 
     /**
@@ -452,7 +455,7 @@ public class RefreshableLayout extends RelativeLayout {
         } else if (footerRefreshMode == FooterRefreshMode.CLICK) {
             return new Click2LoadFooterView(getContext());
         } else if (footerRefreshMode == FooterRefreshMode.PULL) {
-            return new com.huilan.refreshableview.footerview.RotateHeaderView(getContext());
+            return new com.huilan.refreshableview.footerview.RotateFooterView(getContext());
         }
         return new AutoLoadFooterView(getContext());
     }
@@ -498,6 +501,7 @@ public class RefreshableLayout extends RelativeLayout {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mSmoothScroller.cancel();
+                mOverScroller.abortAnimation();
                 startX = event.getRawX();
                 startY = event.getRawY();
                 needInterrupt = false;
@@ -678,6 +682,7 @@ public class RefreshableLayout extends RelativeLayout {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
         if (changed) {
             initContentView();
             if (headerView != null) {
@@ -708,6 +713,16 @@ public class RefreshableLayout extends RelativeLayout {
         }
     }
 
+    @Override
+    public void computeScroll() {
+        if (mOverScroller != null) {
+            if (mOverScroller.computeScrollOffset()) {
+//                System.out.println("过滑回弹:" + "currY=" + -mOverScroller.getCurrX() + ", currY=" + -mOverScroller.getCurrY());
+                scrollTo(mOverScroller.getCurrX(), mOverScroller.getCurrY());
+                postInvalidate();
+            }
+        }
+    }
 
     /**
      * 刷新状态
@@ -771,51 +786,22 @@ public class RefreshableLayout extends RelativeLayout {
     }
 
     private class IntervalOnOverScrollListener implements IRefreshable.OnOverScrollListener {
+
         @Override
-        public void onOverScroll(int dx, int dy) {
+        public void onOverScroll(int dy) {
             if (getOverScrollMode() == OVER_SCROLL_NEVER) {
                 return;
             }
-            if (dy < 0) {
-                dy = Math.max(3 * dy / 4, -80);
-//                final int duration = (int) (-0.000066 * dy * dy * dy - 0.0155 * dy * dy - 1.245 * dy + 135.77);
-                final int duration = 167;
-                System.out.println("上方边界回弹" + ",dy=" + dy + ",getScrollY" + getScrollY() + ",duration=" + duration);
-                if (footerRefreshState == RefreshState.REFRESHING || headerRefreshState == RefreshState.REFRESHING) {
-                    dy = dy + getScrollY();
-                }
-                mSmoothScroller.smoothScrollTo(RefreshableLayout.this, 0, dy, duration, 0, new SmoothScroller.onSmoothScrollListenerAdapter() {
-                    @Override
-                    public void onSmoothScrollEnd() {
-                        int y = 0;
-                        if (headerRefreshState == RefreshState.REFRESHING) {
-                            y = -headerHeight;
-                        } else if (footerRefreshState == RefreshState.REFRESHING) {
-                            y = footerHeight;
-                        }
-                        mSmoothScroller.smoothScrollTo(RefreshableLayout.this, 0, y, duration, 0, null);
-                    }
-                });
-            } else {
-                dy = Math.min(3 * dy / 4, 80);
-//                final int duration = (int) (0.000066 * dy * dy * dy - 0.0155 * dy * dy + 1.245 * dy + 135.77);
-                final int duration = 167;
-                System.out.println("下边界回弹" + ",dy=" + dy + ",getScrollY" + getScrollY() + ",duration=" + duration);
-                if (footerRefreshState == RefreshState.REFRESHING || headerRefreshState == RefreshState.REFRESHING) {
-                    dy = dy + getScrollY();
-                }
-                mSmoothScroller.smoothScrollTo(RefreshableLayout.this, 0, dy, duration, 0, new SmoothScroller.onSmoothScrollListenerAdapter() {
-                    @Override
-                    public void onSmoothScrollEnd() {
-                        int y = 0;
-                        if (footerRefreshState == RefreshState.REFRESHING) {
-                            y = footerHeight;
-                        } else if (headerRefreshState == RefreshState.REFRESHING) {
-                            y = -headerHeight;
-                        }
-                        mSmoothScroller.smoothScrollTo(RefreshableLayout.this, 0, y, duration, 0, null);
-                    }
-                });
+            if (dy > 0) {
+                dy = Math.min(dy, 1500);
+//                System.out.println("上方边界回弹" + ",velocity=" + dy + ",getScrollY=" + getScrollY());
+                mOverScroller.fling(getScrollX(), getScrollY(), 0, dy, 0, 0, 0, 0, 0, 80);
+                postInvalidate();
+            } else if (dy < 0) {
+                dy = Math.max(dy, -1500);
+//                System.out.println("下方边界回弹" + ",velocity=" + dy + ",getScrollY=" + getScrollY());
+                mOverScroller.fling(getScrollX(), getScrollY(), 0, dy, 0, 0, 0, 0, 0, 80);
+                postInvalidate();
             }
         }
     }

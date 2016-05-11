@@ -22,6 +22,6 @@ public interface IRefreshable {
     void setOnOverScrollListener(OnOverScrollListener onOverScrollListener);
 
     interface OnOverScrollListener {
-        void onOverScroll(int dx, int dy);
+        void onOverScroll(int velocity);
     }
 }

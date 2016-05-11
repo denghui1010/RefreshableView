@@ -2,6 +2,7 @@ package com.huilan.refreshableview.weight;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.OverScroller;
 import android.widget.ScrollView;
 
 /**
@@ -9,13 +10,13 @@ import android.widget.ScrollView;
  * Created by liudenghui on 14-8-29.
  */
 public class RefreshableScrollView extends ScrollView implements IRefreshable {
-    private int mDeltaX;
-    private int mDeltaY;
     private OnOverScrollListener mOnOverScrollListener;
+    private final OverScroller mOverScroller;
 
     public RefreshableScrollView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setOverScrollMode(OVER_SCROLL_NEVER);
+        mOverScroller = new OverScroller(getContext(), null);
     }
 
     public void setOnOverScrollListener(OnOverScrollListener onOverScrollListener) {
@@ -27,19 +28,35 @@ public class RefreshableScrollView extends ScrollView implements IRefreshable {
 //        System.out.println("过滑:" + "scrollY=" + scrollY + ",clampedY=" + clampedY);
         super.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
         if (clampedY) {
+            float currVelocity = mOverScroller.getCurrVelocity();
+            mOverScroller.abortAnimation();
+            int finalY = mOverScroller.getFinalY();
+            if (finalY < 0) {
+                currVelocity = -currVelocity;
+            }
             if (mOnOverScrollListener != null) {
-                mOnOverScrollListener.onOverScroll(mDeltaX, mDeltaY);
-                System.out.println("边界回弹:开始");
+                mOnOverScrollListener.onOverScroll((int) currVelocity);
             }
         }
     }
 
     @Override
-    protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
-//        System.out.println("边界回弹:" + "deY=" + deltaY + ",scrollY=" + scrollY + ",scrollRangeY=" + scrollRangeY + ",maxOverScrollY=" + maxOverScrollY + ",isTouch=" + isTouchEvent);
-        mDeltaX = deltaX;
-        mDeltaY = deltaY;
-        return super.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
+    public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
+//        System.out.println("速度:" + velocityY + ", scrollY=" + getScrollY());
+        velocityY = velocityY / 2;
+        if (velocityY > 0) {//上滑,下边界回弹
+            mOverScroller.fling(0, 0, (int) velocityX, (int) velocityY, 0, 0, -getHeight(), getHeight());
+        } else if (velocityY < 0) {//下滑,上边界回弹
+            mOverScroller.fling(0, 0, (int) velocityX, (int) velocityY, 0, 0, -getHeight(), getHeight());
+        }
+        return super.dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public void computeScroll() {
+        super.computeScroll();
+        mOverScroller.computeScrollOffset();
+//        System.out.println("我要计算:" + mOverScroller.getCurrY() + ",finally:" + mOverScroller.getFinalY() + ",scrollY:" + getScrollY() + ",velocity:" + mOverScroller.getCurrVelocity());
     }
 
     @Override

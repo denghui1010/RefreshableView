@@ -15,21 +15,21 @@ import com.huilan.refreshableview.animation.RotatePullAnimation;
  * 下拉刷新headerview
  * Created by liudenghui on 14-8-8.
  */
-public class RotateHeaderView extends CustomView {
+public class RotateFooterView extends CustomView {
 
     private TextView header_text_1;
     private TextView header_text_2;
     private IPullAnimation mPullAnimation;
 
-    public RotateHeaderView(Context context) {
+    public RotateFooterView(Context context) {
         super(context);
     }
 
-    public RotateHeaderView(Context context, AttributeSet attrs) {
+    public RotateFooterView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public RotateHeaderView(Context context, AttributeSet attrs, int defStyle) {
+    public RotateFooterView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 

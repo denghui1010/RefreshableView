@@ -78,7 +78,7 @@ class SmoothScroller {
     public void smoothScrollTo(View view, int x, int y, long delayMillis, OnSmoothScrollListener listener) {
         int duration = (int) (Math.abs((y - view.getScrollY())) * 2.5);
         duration = Math.min(300, duration);
-        System.out.println("duration=" + duration);
+//        System.out.println("duration=" + duration);
         smoothScrollTo(view, x, y, duration, delayMillis, listener);
     }
 

@@ -24,7 +24,7 @@ dependencies {
     compile 'com.lidroid.xutils:xutils:2.6.14'
     compile 'com.huilan.imagepager:imagepager:0.1.5-SNAPSHOT@aar'
     compile 'com.android.support:appcompat-v7:23.1.1'
-
+    compile 'me.everything:overscroll-decor-android:1.0.1'
     compile project(':library')
 }
 

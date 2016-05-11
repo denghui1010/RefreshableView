@@ -33,7 +33,7 @@ public class TestOnRefreshListener implements RefreshableLayout.OnRefreshListene
                 Random random = new Random();
                 int temp = random.nextInt(5) + 1;
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

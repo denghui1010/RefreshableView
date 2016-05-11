@@ -1,9 +1,8 @@
 package com.huilan.refreshableview.animation;
 
-import com.huilan.refreshableview.R;
-
-import android.graphics.Matrix;
-import android.os.Build;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 
 /**
@@ -11,70 +10,41 @@ import android.widget.ImageView;
  * Created by liudenghui on 14-10-13.
  */
 public class RotatePullAnimation implements IPullAnimation {
-    private static final int ROTATION_ANIMATION_DURATION = 600;
     private ImageView mImageView;
-    private Matrix mHeaderImageMatrix;
-    private RotateRunnable mRotateRunnable;
-    private float mAngle;
+    private ObjectAnimator mRotateAnim;
 
     public RotatePullAnimation(ImageView imageView) {
         mImageView = imageView;
-        init();
+        initAnim();
     }
 
     @Override
     public void onPull(int dx, int canRefresh) {
-        mAngle = (float) dx / canRefresh * 180;
-        mHeaderImageMatrix.setRotate(mAngle, mImageView.getWidth() / 2, mImageView.getHeight() / 2);
-        mImageView.setImageMatrix(mHeaderImageMatrix);
+        float angle = (float) dx / canRefresh * 180;
+        System.out.println("angle=" + angle);
+        mImageView.setRotation(angle);
     }
 
     @Override
     public void reset() {
-        stop();
-        mHeaderImageMatrix.reset();
-        mImageView.setImageMatrix(mHeaderImageMatrix);
+        mRotateAnim.end();
     }
 
     @Override
     public void start() {
-        mRotateRunnable = new RotateRunnable();
-        mImageView.post(mRotateRunnable);
+        mRotateAnim.start();
     }
 
     @Override
     public void stop() {
-        if (mRotateRunnable != null) {
-            mRotateRunnable.stop();
-        }
+        mRotateAnim.cancel();
     }
 
-    protected void init() {
-        mImageView.setScaleType(ImageView.ScaleType.MATRIX);
-        mHeaderImageMatrix = new Matrix();
-        mImageView.setImageMatrix(mHeaderImageMatrix);
-    }
-
-    class RotateRunnable implements Runnable {
-        private boolean continueRun = true;
-
-        @Override
-        public void run() {
-            if (!continueRun) {
-                return;
-            }
-            mAngle += 10;
-            mHeaderImageMatrix.setRotate(mAngle, mImageView.getWidth() / 2, mImageView.getHeight() / 2);
-            mImageView.setImageMatrix(mHeaderImageMatrix);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                mImageView.postOnAnimation(this);
-            } else {
-                mImageView.postDelayed(this, 16);
-            }
-        }
-
-        public void stop() {
-            continueRun = false;
-        }
+    private void initAnim() {
+        mRotateAnim = ObjectAnimator.ofFloat(mImageView, "rotation", 0f, 360f);
+        mRotateAnim.setInterpolator(new LinearInterpolator());
+        mRotateAnim.setRepeatMode(ValueAnimator.INFINITE);
+        mRotateAnim.setRepeatCount(Integer.MAX_VALUE);
+        mRotateAnim.setDuration(800);
     }
 }
